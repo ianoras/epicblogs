@@ -1,0 +1,183 @@
+:root {
+  --primary-color: #2c3e50;
+  --secondary-color: #3498db;
+  --accent-color: #e74c3c;
+  --background-color: #f8f9fa;
+  --text-color: #2c3e50;
+  --border-radius: 8px;
+  --transition-speed: 0.3s;
+}
+
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Stili per le card */
+.card {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Stili per i bottoni */
+.btn-primary {
+  background-color: var(--secondary-color);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 8px 20px;
+  transition: all var(--transition-speed);
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+/* Stili per il navbar */
+.navbar {
+  background-color: var(--primary-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+  font-weight: bold;
+  color: white !important;
+}
+
+/* Stili per le stelle del rating */
+.star-rating {
+  color: #f1c40f;
+  transition: transform var(--transition-speed);
+}
+
+.star-rating:hover {
+  transform: scale(1.1);
+}
+
+/* Stili per i commenti */
+.comment {
+  border-left: 3px solid var(--secondary-color);
+  padding-left: 15px;
+  margin-bottom: 15px;
+  transition: all var(--transition-speed);
+}
+
+.comment:hover {
+  background-color: rgba(52, 152, 219, 0.05);
+}
+
+/* Stili per il form di creazione post */
+.post-form {
+  background-color: white;
+  padding: 25px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Stili per le immagini */
+.post-image {
+  border-radius: var(--border-radius);
+  transition: transform var(--transition-speed);
+}
+
+.post-image:hover {
+  transform: scale(1.02);
+}
+
+/* Animazioni */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Stili per il footer */
+.footer {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 20px 0;
+  margin-top: 40px;
+}
+
+/* Stili per i link */
+a {
+  color: var(--secondary-color);
+  text-decoration: none;
+  transition: color var(--transition-speed);
+}
+
+a:hover {
+  color: #2980b9;
+  text-decoration: none;
+}
+
+/* Stili per i form */
+.form-control {
+  border-radius: var(--border-radius);
+  border: 1px solid #ddd;
+  padding: 10px;
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.form-control:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+/* Stili per le badge */
+.badge {
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-weight: 500;
+}
+
+/* Stili per il loading spinner */
+.spinner-border {
+  color: var(--secondary-color);
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Stili per i messaggi di errore */
+.alert {
+  border-radius: var(--border-radius);
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Stili per il pulsante di scroll to top */
+.scroll-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: var(--secondary-color);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.scroll-to-top:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
