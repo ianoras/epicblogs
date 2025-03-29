@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import MyPosts from './pages/MyPosts';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+import AuthDebug from './components/AuthDebug';
 
 const App = () => {
     return (
@@ -57,6 +58,7 @@ const App = () => {
                             </div>
                         </div>
                     </footer>
+                    <AuthDebug />
                 </div>
             </Router>
         </GoogleOAuthProvider>
