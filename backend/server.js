@@ -98,6 +98,13 @@ app.get('/users/auth/google/callback',
   }
 );
 
+// Aggiungi prima di app.use("/users", userRoutes), app.use("/posts", postRoutes), ecc.
+app.get('/users/auth/google/callback', (req, res) => {
+  // Reindirizza a /auth/google/callback mantenendo i parametri
+  const queryParams = req.url.split('?')[1] || '';
+  res.redirect(`/auth/google/callback${queryParams ? '?' + queryParams : ''}`);
+});
+
 // Le altre route
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
