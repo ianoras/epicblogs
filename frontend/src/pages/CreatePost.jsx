@@ -104,15 +104,13 @@ const CreatePost = () => {
             formDataToSend.append('cover', coverImage);
             formDataToSend.append('author', user._id);
 
-            const response = await axios.post(
-                'http://localhost:3001/posts', 
-                formDataToSend,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/posts`, formDataToSend, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
-            );
+            });
 
             if (response.data) {
                 navigate(`/posts/${response.data._id}`);

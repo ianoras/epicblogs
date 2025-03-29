@@ -21,7 +21,12 @@ const Register = () => {
     setError('');
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:3001/users/register', formData);
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, formData, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       
       // Effettua il login automatico
       const userData = {

@@ -28,7 +28,13 @@ const PostDetails = () => {
         const fetchPost = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`http://localhost:3001/posts/${id}`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts/${id}`, {
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
                 setPost(response.data);
                 setError(null);
             } catch (error) {
@@ -41,7 +47,13 @@ const PostDetails = () => {
 
         const fetchRatingStats = async () => {
             try {
-                const response = await axios.get(`http://localhost:3001/ratings/${id}/rating`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/ratings/${id}/rating`, {
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
                 setTotalRatings(response.data.totalRatings);
                 setAverageRating(response.data.averageRating);
             } catch (error) {
@@ -53,7 +65,13 @@ const PostDetails = () => {
             if (!user) return;
             
             try {
-                const response = await axios.get(`http://localhost:3001/ratings/${id}/rating/${user._id}`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/ratings/${id}/rating/${user._id}`, {
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
                 setRating(response.data.rating);
             } catch (error) {
                 console.error('Errore nel caricamento della valutazione utente:', error);
@@ -81,13 +99,25 @@ const PostDetails = () => {
         }
 
         try {
-            await axios.post(`http://localhost:3001/ratings/${id}/rating`, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/ratings/${id}/rating`, {
                 userId: user._id,
                 rating: newRating
+            }, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
             });
             setRating(newRating);
             // Ricarica le statistiche
-            const response = await axios.get(`http://localhost:3001/ratings/${id}/rating`);
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/ratings/${id}/rating`, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
             setTotalRatings(response.data.totalRatings);
             setAverageRating(response.data.averageRating);
         } catch (error) {
@@ -99,7 +129,12 @@ const PostDetails = () => {
     const handleDelete = async () => {
         if (window.confirm('Sei sicuro di voler eliminare questo post?')) {
             try {
-                await axios.delete(`http://localhost:3001/posts/${id}`);
+                await axios.delete(`${process.env.REACT_APP_API_URL}/posts/${id}`, {
+                    withCredentials: true,
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
                 navigate('/my-posts');
             } catch (err) {
                 setError('Errore durante l\'eliminazione del post');

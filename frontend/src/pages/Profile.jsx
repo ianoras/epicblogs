@@ -66,7 +66,7 @@ const Profile = () => {
       }
 
       const response = await axios.put(
-        `http://localhost:3001/users/${user._id}`,
+        `${process.env.REACT_APP_API_URL}/users/profile`,
         formDataToSend,
         {
           headers: {
@@ -96,6 +96,36 @@ const Profile = () => {
       setError(err.response?.data?.message || 'Errore durante l\'aggiornamento del profilo');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserData = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/profile`, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      // ... resto del codice
+    } catch (error) {
+      // ... gestione errori
+    }
+  };
+
+  const updateProfile = async (data) => {
+    try {
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/users/profile`, data, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      // ... resto del codice
+    } catch (error) {
+      // ... gestione errori
     }
   };
 
