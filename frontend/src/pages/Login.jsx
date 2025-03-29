@@ -106,6 +106,14 @@ const Login = () => {
 
     return (
         <Container className="py-5">
+            {/* Debug info - Solo per test */}
+            <div className="mb-4 p-3 border rounded bg-light">
+                <h5>Debug Info (rimuovere in produzione)</h5>
+                <p>URL search: {location.search}</p>
+                <p>Has user param: {new URLSearchParams(location.search).has('user').toString()}</p>
+                <p>Has token param: {new URLSearchParams(location.search).has('token').toString()}</p>
+            </div>
+            
             <Row className="justify-content-center">
                 <Col md={6}>
                     <Card className="shadow border-0">
