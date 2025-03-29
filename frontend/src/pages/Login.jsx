@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Form, Button, Container, Row, Col, Alert, Card, Spinner } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 
 const Login = () => {
@@ -85,8 +86,31 @@ const Login = () => {
     };
 
     const handleGoogleLogin = () => {
-        // Forza l'uso dell'URL completo di produzione
-        window.location.href = 'https://epicblogs.onrender.com/auth/google';
+        // Apri una nuova finestra per l'autenticazione Google
+        const popupWidth = 600;
+        const popupHeight = 600;
+        const left = (window.innerWidth - popupWidth) / 2;
+        const top = (window.innerHeight - popupHeight) / 2;
+        
+        // URL assoluto per l'autenticazione
+        const authUrl = 'https://epicblogs.onrender.com/auth/google';
+        
+        window.open(
+            authUrl,
+            'googleAuth', 
+            `width=${popupWidth},height=${popupHeight},left=${left},top=${top}`
+        );
+        
+        // Listener per ricevere messaggi dalla finestra popup
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'AUTH_SUCCESS') {
+                const { user, token } = event.data;
+                if (user) {
+                    login(user);
+                    navigate('/', { replace: true });
+                }
+            }
+        }, false);
     };
 
     return (
@@ -126,15 +150,16 @@ const Login = () => {
                                         Accedi
                                     </Button>
 
-                                    <Button 
-                                        variant="outline-danger" 
-                                        onClick={handleGoogleLogin}
-                                        className="d-flex align-items-center justify-content-center gap-2"
-                                        type="button"
-                                    >
-                                        <i className="bi bi-google"></i>
-                                        Accedi con Google
-                                    </Button>
+                                    <div className="d-flex justify-content-center my-3">
+                                        <GoogleLogin
+                                            onSuccess={handleGoogleLogin}
+                                            onError={() => setError('Login con Google fallito')}
+                                            useOneTap
+                                            text="continue_with"
+                                            shape="pill"
+                                            locale="it"
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="text-center mt-4">
