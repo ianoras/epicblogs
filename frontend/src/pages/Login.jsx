@@ -58,6 +58,40 @@ const Login = () => {
         }
     }, [location, login, navigate]);
 
+    // Aggiungi nell'useEffect:
+    useEffect(() => {
+        console.log('Login component mounted - checking URL for params');
+        const searchParams = new URLSearchParams(window.location.search);
+        
+        const userParam = searchParams.get('user');
+        const tokenParam = searchParams.get('token');
+        
+        console.log('URL params:', { userParam: !!userParam, tokenParam: !!tokenParam });
+        
+        if (userParam && tokenParam) {
+            try {
+                const userData = JSON.parse(decodeURIComponent(userParam));
+                const token = decodeURIComponent(tokenParam);
+                
+                console.log('Parsed user data:', userData);
+                console.log('Token from URL:', token.substring(0, 10) + '...');
+                
+                // Chiamata al login con un piccolo ritardo per garantire che lo stato sia aggiornato
+                setTimeout(() => {
+                    const success = login(userData, token);
+                    if (success) {
+                        console.log('Autenticazione via URL params completata');
+                        navigate('/');
+                    } else {
+                        console.error('Errore durante l\'autenticazione con i parametri URL');
+                    }
+                }, 300);
+            } catch (error) {
+                console.error('Errore nel parsing dei parametri URL:', error);
+            }
+        }
+    }, [login, navigate]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');

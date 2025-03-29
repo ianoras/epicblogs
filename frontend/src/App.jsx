@@ -10,6 +10,30 @@ import MyPosts from './pages/MyPosts';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import AuthDebug from './components/AuthDebug';
+import { useAuth } from './contexts/AuthContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+function AuthDebugInfo() {
+    const { isAuthenticated, user, token } = useAuth();
+    
+    return (
+        <div style={{ 
+            position: 'fixed', 
+            bottom: '10px', 
+            right: '10px', 
+            background: '#f0f0f0', 
+            padding: '8px', 
+            borderRadius: '4px',
+            fontSize: '12px',
+            zIndex: 9999,
+            border: '1px solid #ccc'
+        }}>
+            Stato: {isAuthenticated ? `✅ Autenticato (${user?.name || user?.username})` : '❌ Non autenticato'}<br/>
+            Token: {token ? '✅ Presente' : '❌ Assente'}
+        </div>
+    );
+}
 
 const App = () => {
     return (
@@ -59,6 +83,8 @@ const App = () => {
                         </div>
                     </footer>
                     <AuthDebug />
+                    <AuthDebugInfo />
+                    <ToastContainer />
                 </div>
             </Router>
         </GoogleOAuthProvider>
