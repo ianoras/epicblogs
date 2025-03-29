@@ -1,4 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
+
+// Aggiungi queste configurazioni dopo gli imports
+axios.defaults.withCredentials = true;
+axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 const AuthContext = createContext();
 
@@ -20,32 +25,39 @@ export const AuthProvider = ({ children }) => {
       try {
         const userData = JSON.parse(savedUser);
         setUser(userData);
+        // Imposta il token nell'header di default per axios
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       } catch (error) {
         console.error('Errore nel parsing dei dati utente salvati:', error);
-        // Se c'è un errore, pulisci il localStorage
         localStorage.removeItem('user');
         localStorage.removeItem('token');
+        delete axios.defaults.headers.common['Authorization'];
       }
     }
     
     setLoading(false);
   }, []);
 
-  const login = (userData) => {
+  const login = async (userData, token) => {
     console.log('Login con dati:', userData);
     setUser(userData);
+    if (token) {
+      localStorage.setItem('token', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization'];
   };
 
   const updateUser = (updatedUserData) => {
     setUser(updatedUserData);
     localStorage.setItem('user', JSON.stringify(updatedUserData));
-    // Aggiorna il timestamp quando l'utente viene aggiornato
     setTimestamp(new Date().getTime());
   };
 

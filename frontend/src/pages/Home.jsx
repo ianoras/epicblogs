@@ -48,7 +48,8 @@ const Home = () => {
         const response = await axios.get(url, {
           withCredentials: true,
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         });
         
@@ -73,11 +74,11 @@ const Home = () => {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts/categories`, {
           withCredentials: true,
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         });
         
-        // Crea un oggetto per mappare le categorie con i loro conteggi
         const categoryCounts = {};
         if (response.data && response.data.categories) {
           response.data.categories.forEach(cat => {
@@ -85,7 +86,6 @@ const Home = () => {
           });
         }
         
-        // Crea un array con tutte le categorie predefinite e i conteggi
         const allCategories = predefinedCategories.map(name => ({
           name,
           count: categoryCounts[name] || 0

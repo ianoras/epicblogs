@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import passport from './config/passport.js';
 import authRoutes from './routes/auth.js';
+import session from 'express-session';
 
 //routes
 import userRoutes from './routes/users.js';
@@ -17,7 +18,7 @@ dotenv.config();
 
 const app = express();
 
-// Configurazione CORS per permettere le richieste da Google
+// Aggiorna la configurazione CORS
 app.use(cors({
     origin: [
         'http://localhost:3000', 
@@ -27,7 +28,22 @@ app.use(cors({
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Authorization'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+}));
+
+// Aggiungi/aggiorna la configurazione delle sessioni
+app.use(session({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: true, // per HTTPS
+        sameSite: 'none', // importante per cross-domain
+        maxAge: 24 * 60 * 60 * 1000 // 24 ore
+    }
 }));
 
 app.use(express.json());

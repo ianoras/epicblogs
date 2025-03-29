@@ -24,7 +24,8 @@ const NavigationBar = () => {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts/categories`, {
           withCredentials: true,
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         });
         
@@ -36,7 +37,7 @@ const NavigationBar = () => {
           });
         }
         
-        // Crea un array con tutte le categorie predefinite e i conteggi (0 se non presenti)
+        // Crea un array con tutte le categorie predefinite e i conteggi
         const allCategories = predefinedCategories.map(name => ({
           name,
           count: categoryCounts[name] || 0
@@ -58,6 +59,8 @@ const NavigationBar = () => {
   const handleLogout = async () => {
     try {
       await logout();
+      // Rimuovi l'header di autorizzazione dopo il logout
+      delete axios.defaults.headers.common['Authorization'];
       navigate('/');
     } catch (error) {
       console.error('Errore durante il logout:', error);
