@@ -15,7 +15,13 @@ const MyPosts = () => {
         const fetchMyPosts = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`http://localhost:3001/posts?author=${user._id}`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts?author=${user._id}`, {
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
                 setPosts(response.data.posts);
                 setError(null);
             } catch (error) {
@@ -36,7 +42,13 @@ const MyPosts = () => {
     const handleDelete = async (postId) => {
         if (window.confirm('Sei sicuro di voler eliminare questo post?')) {
             try {
-                await axios.delete(`http://localhost:3001/posts/${postId}`);
+                await axios.delete(`${process.env.REACT_APP_API_URL}/posts/${postId}`, {
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
                 setPosts(posts.filter(post => post._id !== postId));
             } catch (error) {
                 console.error('Errore nell\'eliminazione del post:', error);
