@@ -5,6 +5,11 @@ import { OAuth2Client } from 'google-auth-library';
 
 const router = express.Router();
 
+// Aggiungi all'inizio del file
+const debug = (msg, ...args) => {
+  console.log(`[DEBUG] ${msg}`, ...args);
+};
+
 // Funzione per generare il token JWT
 const generateToken = (user) => {
   return jwt.sign(
@@ -19,22 +24,35 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Route per iniziare l'autenticazione Google
 router.get('/google',
+  (req, res, next) => {
+    debug('Inizio autenticazione Google');
+    debug('URL richiesto:', req.originalUrl);
+    next();
+  },
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
 // Callback URL per Google
 router.get('/google/callback',
+  (req, res, next) => {
+    debug('Callback Google ricevuto');
+    debug('URL completo:', req.originalUrl);
+    debug('Query params:', req.query);
+    next();
+  },
   passport.authenticate('google', { 
     failureRedirect: 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login',
     session: false 
   }),
   (req, res) => {
+    debug('Autenticazione completata per utente:', req.user._id);
     const user = req.user;
     const userWithoutPassword = { ...user.toObject() };
     delete userWithoutPassword.password;
     
     // Genera il token JWT
     const token = generateToken(user);
+    debug('Token generato');
     
     // Imposta il token come cookie
     res.cookie('token', token, {
@@ -43,9 +61,10 @@ router.get('/google/callback',
       sameSite: 'none',
       maxAge: 24 * 60 * 60 * 1000 // 24 ore
     });
+    debug('Cookie impostato');
 
     // Invia una pagina HTML che invia un messaggio alla finestra principale
-    res.send(`
+    const response = `
       <!DOCTYPE html>
       <html>
       <head>
@@ -55,16 +74,25 @@ router.get('/google/callback',
         <h1>Autenticazione completata</h1>
         <p>Puoi chiudere questa finestra ora.</p>
         <script>
-          window.opener.postMessage({
-            type: 'AUTH_SUCCESS',
-            user: ${JSON.stringify(userWithoutPassword)},
-            token: '${token}'
-          }, '*');
-          window.close();
+          console.log('Script di chiusura eseguito');
+          if (window.opener) {
+            console.log('Trovata finestra principale, invio messaggio');
+            window.opener.postMessage({
+              type: 'AUTH_SUCCESS',
+              user: ${JSON.stringify(userWithoutPassword)},
+              token: '${token}'
+            }, '*');
+            window.close();
+          } else {
+            console.log('Nessuna finestra principale trovata');
+            window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login?user=${encodeURIComponent(JSON.stringify(userWithoutPassword))}';
+          }
         </script>
       </body>
       </html>
-    `);
+    `;
+    debug('Invio risposta HTML');
+    res.send(response);
   }
 );
 

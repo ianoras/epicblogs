@@ -86,6 +86,8 @@ const Login = () => {
     };
 
     const handleGoogleLogin = () => {
+        console.log("1. Iniziando il login con Google");
+        
         // Apri una nuova finestra per l'autenticazione Google
         const popupWidth = 600;
         const popupHeight = 600;
@@ -94,18 +96,24 @@ const Login = () => {
         
         // URL assoluto per l'autenticazione
         const authUrl = 'https://epicblogs.onrender.com/auth/google';
+        console.log("2. URL di autenticazione:", authUrl);
         
-        window.open(
+        const popup = window.open(
             authUrl,
             'googleAuth', 
             `width=${popupWidth},height=${popupHeight},left=${left},top=${top}`
         );
         
+        console.log("3. Popup aperto:", popup ? "Sì" : "No");
+        
         // Listener per ricevere messaggi dalla finestra popup
         window.addEventListener('message', (event) => {
+            console.log("4. Ricevuto messaggio:", event.data);
             if (event.data && event.data.type === 'AUTH_SUCCESS') {
+                console.log("5. Autenticazione riuscita, dati:", event.data);
                 const { user, token } = event.data;
                 if (user) {
+                    console.log("6. Login utente con:", user.firstName, user.lastName);
                     login(user);
                     navigate('/', { replace: true });
                 }

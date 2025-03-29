@@ -98,11 +98,17 @@ app.get('/users/auth/google/callback',
   }
 );
 
-// Aggiungi prima di app.use("/users", userRoutes), app.use("/posts", postRoutes), ecc.
+// Aggiungi prima delle altre route
 app.get('/users/auth/google/callback', (req, res) => {
+  console.log('[SERVER] Ricevuta richiesta a /users/auth/google/callback');
+  console.log('[SERVER] Query params:', req.query);
+  
   // Reindirizza a /auth/google/callback mantenendo i parametri
-  const queryParams = req.url.split('?')[1] || '';
-  res.redirect(`/auth/google/callback${queryParams ? '?' + queryParams : ''}`);
+  const queryParams = new URLSearchParams(req.query).toString();
+  const redirectUrl = `/auth/google/callback?${queryParams}`;
+  
+  console.log('[SERVER] Reindirizzamento a:', redirectUrl);
+  res.redirect(redirectUrl);
 });
 
 // Aggiungi all'inizio, prima di tutte le altre route
