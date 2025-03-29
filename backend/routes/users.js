@@ -194,36 +194,4 @@ router.put("/:id", upload.single('profilePicture'), async (req, res) => {
     }
   });
 
-// Rotte per l'autenticazione Google
-router.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-);
-
-router.get('/auth/google/callback', 
-  passport.authenticate('google', { session: false }),
-  (req, res) => {
-    try {
-      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET);
-      
-      // Prepara i dati utente
-      const userData = {
-        _id: req.user._id,
-        email: req.user.email,
-        firstName: req.user.firstName,
-        lastName: req.user.lastName,
-        username: req.user.username,
-        profilePicture: req.user.profilePicture,
-        token: token
-      };
-      
-      // Redirect all'app frontend
-      const userDataStr = encodeURIComponent(JSON.stringify(userData));
-      res.redirect(`http://localhost:3000/login?user=${userDataStr}&success=true`);
-    } catch (error) {
-      console.error('Errore nel callback Google:', error);
-      res.redirect('http://localhost:3000/login?error=auth_failed');
-    }
-  }
-);
-
 export default router;
