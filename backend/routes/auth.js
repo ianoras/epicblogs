@@ -40,6 +40,7 @@ router.get('/google/callback',
       maxAge: 24 * 60 * 60 * 1000 // 24 ore
     });
 
+    // Reindirizza al frontend con i dati dell'utente
     res.redirect(`https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/auth/success?user=${encodeURIComponent(JSON.stringify(userWithoutPassword))}`);
   }
 );
