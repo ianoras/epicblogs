@@ -105,6 +105,19 @@ app.get('/users/auth/google/callback', (req, res) => {
   res.redirect(`/auth/google/callback${queryParams ? '?' + queryParams : ''}`);
 });
 
+// Aggiungi all'inizio, prima di tutte le altre route
+app.use((req, res, next) => {
+  // Se la richiesta è per il callback OAuth e contiene il parametro code
+  if (req.path.includes('auth/google/callback') && req.query.code) {
+    // Reindirizza sempre al callback corretto
+    const queryString = Object.keys(req.query)
+      .map(key => `${key}=${encodeURIComponent(req.query[key])}`)
+      .join('&');
+    return res.redirect(`https://epicblogs.onrender.com/auth/google/callback?${queryString}`);
+  }
+  next();
+});
+
 // Le altre route
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);

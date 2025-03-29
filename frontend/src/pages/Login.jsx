@@ -85,7 +85,7 @@ const Login = () => {
     };
 
     const handleGoogleLogin = () => {
-        // Forza l'URL di produzione
+        // Forza l'uso dell'URL completo di produzione
         window.location.href = 'https://epicblogs.onrender.com/auth/google';
     };
 
