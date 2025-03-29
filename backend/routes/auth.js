@@ -37,16 +37,51 @@ router.get('/google/callback',
     // Genera il token JWT
     const token = generateToken(user);
     
-    // Prepara i dati utente in formato JSON
-    const userData = JSON.stringify(userWithoutPassword);
-    
-    // Crea l'URL completo per il reindirizzamento con token e dati utente
-    const redirectUrl = `https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login?user=${encodeURIComponent(userData)}&token=${token}`;
-    
-    console.log("Reindirizzamento a:", redirectUrl);
-    
-    // Reindirizza al frontend
-    return res.redirect(redirectUrl);
+    // Invia una pagina HTML che fa automaticamente il login e reindirizza
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Login completato</title>
+        <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+          .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #09f; animation: spin 1s linear infinite; margin: 20px auto; }
+          @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        </style>
+      </head>
+      <body>
+        <h1>Login completato</h1>
+        <p>Reindirizzamento in corso...</p>
+        <div class="spinner"></div>
+        
+        <script>
+          console.log("Script di autologin avviato");
+          
+          // Salva il token
+          localStorage.setItem('token', '${token}');
+          console.log("Token salvato");
+          
+          // Salva i dati utente
+          const userData = ${JSON.stringify(userWithoutPassword)};
+          userData.name = userData.firstName + ' ' + userData.lastName;
+          localStorage.setItem('user', JSON.stringify(userData));
+          console.log("Dati utente salvati:", userData.firstName, userData.lastName);
+          
+          // Imposta l'header di autorizzazione per axios se c'è
+          if (window.axios) {
+            window.axios.defaults.headers.common['Authorization'] = 'Bearer ${token}';
+            console.log("Header Authorization impostato");
+          }
+          
+          // Reindirizza alla home
+          console.log("Reindirizzamento alla home");
+          setTimeout(() => {
+            window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/';
+          }, 1000);
+        </script>
+      </body>
+      </html>
+    `);
   }
 );
 
