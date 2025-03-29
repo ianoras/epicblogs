@@ -39,7 +39,7 @@ const Home = () => {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        let url = `http://localhost:3001/posts?page=${currentPage}&limit=6`;
+        let url = `${process.env.REACT_APP_API_URL}/posts?page=${currentPage}&limit=6`;
         
         if (selectedCategory) {
           url += `&category=${selectedCategory}`;
@@ -66,7 +66,7 @@ const Home = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/posts/categories');
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts/categories`);
         
         // Crea un oggetto per mappare le categorie con i loro conteggi
         const categoryCounts = {};
