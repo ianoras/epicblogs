@@ -21,7 +21,12 @@ const NavigationBar = () => {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts/categories`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts/categories`, {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
         
         // Crea un oggetto per mappare le categorie con i loro conteggi
         const categoryCounts = {};

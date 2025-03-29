@@ -22,11 +22,12 @@ app.use(cors({
     origin: [
         'http://localhost:3000', 
         'https://accounts.google.com',
-        'https://epicblogs-two.vercel.app',  // Aggiungi il dominio Vercel
-        'https://epicblogs2-0.vercel.app',  // Dominio Vercel
-        'https://epicblogs2-0.onrender.com' // Dominio Render
+        'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app',
+        'https://epicblogs-two.vercel.app'
     ],
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
