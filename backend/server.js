@@ -66,5 +66,6 @@ app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
 app.use("/comments", commentRoutes);
 app.use("/auth", authRoutes);
+app.use("/users/auth", authRoutes);
 app.use("/ratings", ratingRoutes);
 app.use("/upload", uploadRouter);
