@@ -22,6 +22,7 @@ app.use(cors({
     origin: [
         'http://localhost:3000', 
         'https://accounts.google.com',
+        'https://epicblogs-two.vercel.app',  // Aggiungi il dominio Vercel
         'https://epicblogs2-0.vercel.app',  // Dominio Vercel
         'https://epicblogs2-0.onrender.com' // Dominio Render
     ],
