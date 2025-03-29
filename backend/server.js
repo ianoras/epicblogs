@@ -61,11 +61,17 @@ mongoose.connect(process.env.MONGO_URL)
     })
     .catch((err) => console.log(err));
 
-//URL
+// Aggiungi questa route specifica prima delle altre route
+app.get('/users/auth/google/callback', (req, res) => {
+  // Reindirizza a /auth/google/callback mantenendo i parametri
+  const queryParams = new URLSearchParams(req.query).toString();
+  res.redirect(`/auth/google/callback?${queryParams}`);
+});
+
+// Le altre route
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
 app.use("/comments", commentRoutes);
 app.use("/auth", authRoutes);
-app.use("/users/auth", authRoutes);
 app.use("/ratings", ratingRoutes);
 app.use("/upload", uploadRouter);
