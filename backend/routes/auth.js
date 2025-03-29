@@ -41,7 +41,7 @@ router.get('/google/callback',
     });
 
     // Reindirizza al frontend con i dati dell'utente
-    res.redirect(`https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/auth/success?user=${encodeURIComponent(JSON.stringify(userWithoutPassword))}`);
+    res.redirect(`https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login?user=${encodeURIComponent(JSON.stringify(userWithoutPassword))}`);
   }
 );
 

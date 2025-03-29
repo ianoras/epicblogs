@@ -19,39 +19,23 @@ const Login = () => {
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const userDataStr = params.get('user');
-        const success = params.get('success');
-        const error = params.get('error');
 
-        if (error) {
-            setError('Errore durante il login con Google');
-            return;
-        }
-
-        if (userDataStr && success) {
+        if (userDataStr) {
             try {
-                const data = JSON.parse(decodeURIComponent(userDataStr));
-                console.log('Dati utente ricevuti:', data);
-                
-                // Salva il token nel localStorage
-                localStorage.setItem('token', data.token);
+                const userData = JSON.parse(decodeURIComponent(userDataStr));
+                console.log('Dati utente ricevuti:', userData);
                 
                 // Prepara i dati utente
                 const user = {
-                    ...data,
-                    name: `${data.firstName} ${data.lastName}`
+                    ...userData,
+                    name: `${userData.firstName} ${userData.lastName}`
                 };
-                
-                // Salva l'utente nel localStorage
-                localStorage.setItem('user', JSON.stringify(user));
                 
                 // Effettua il login
                 login(user);
                 
-                // Usa un timeout per assicurarsi che il login sia completato
-                setTimeout(() => {
-                    // Usa window.location invece di navigate per un refresh completo
-                    window.location.href = '/';
-                }, 100);
+                // Reindirizza alla home
+                navigate('/', { replace: true });
             } catch (error) {
                 console.error('Errore nel parsing dei dati utente:', error);
                 setError('Errore durante il login con Google');
