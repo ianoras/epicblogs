@@ -100,41 +100,9 @@ const Login = () => {
         }
     };
 
-    const handleGoogleLogin = async (response) => {
-        try {
-            const res = await axios.post(`${process.env.REACT_APP_API_URL}/auth/google`, {
-                credential: response.credential
-            }, {
-                withCredentials: true,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            if (res.data) {
-                const { token, user } = res.data;
-                
-                // Salva il token nel localStorage
-                localStorage.setItem('token', token);
-                
-                // Prepara i dati utente
-                const userData = {
-                    ...user,
-                    name: `${user.firstName} ${user.lastName}`
-                };
-                
-                // Salva l'utente nel localStorage
-                localStorage.setItem('user', JSON.stringify(userData));
-                
-                // Effettua il login
-                login(userData);
-                
-                // Reindirizza alla home
-                navigate('/', { replace: true });
-            }
-        } catch (error) {
-            console.error('Errore login con Google:', error);
-            setError('Errore durante il login con Google');
-        }
+    const handleGoogleLogin = () => {
+        // Invece di fare una chiamata POST, reindirizza l'utente alla rotta di autenticazione Google
+        window.location.href = `${process.env.REACT_APP_API_URL}/auth/google`;
     };
 
     return (
