@@ -62,7 +62,7 @@ mongoose.connect(process.env.MONGO_URL)
     })
     .catch((err) => console.log(err));
 
-// Funzione per generare il token JWT (copia dalla tua auth.js)
+// Funzione per generare il token JWT
 const generateToken = (user) => {
   return jwt.sign(
     { id: user._id, email: user.email }, 
@@ -94,7 +94,7 @@ app.get('/users/auth/google/callback',
     });
 
     // Reindirizza al frontend con i dati dell'utente
-    res.redirect(`https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/auth/success?user=${encodeURIComponent(JSON.stringify(userWithoutPassword))}`);
+    res.redirect(`https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login?user=${encodeURIComponent(JSON.stringify(userWithoutPassword))}`);
   }
 );
 
@@ -103,5 +103,7 @@ app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
 app.use("/comments", commentRoutes);
 app.use("/auth", authRoutes);
+// Aggiungi questa linea per montare le routes di auth anche su /users/auth
+app.use("/users/auth", authRoutes);
 app.use("/ratings", ratingRoutes);
 app.use("/upload", uploadRouter);
