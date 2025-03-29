@@ -21,14 +21,19 @@ const Comments = ({ postId }) => {
 
     // Carica i commenti (usando useCallback per memorizzare la funzione)
     const fetchComments = useCallback(async () => {
-        // Se non c'è un ID o l'ID è 'create', non fare nulla
         if (!postId || postId === 'create') {
             setLoading(false);
             return;
         }
 
         try {
-            const response = await axios.get(`http://localhost:3001/comments/${postId}`);
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/comments/${postId}`, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
             setComments(response.data);
             setError('');
         } catch (err) {
@@ -58,9 +63,15 @@ const Comments = ({ postId }) => {
         
         try {
             setError('');
-            const response = await axios.post(`http://localhost:3001/comments/${postId}`, {
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/comments/${postId}`, {
                 content: newComment,
                 userId: user._id
+            }, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
             });
             setComments([response.data, ...comments]);
             setNewComment('');
@@ -74,8 +85,13 @@ const Comments = ({ postId }) => {
     const handleDelete = async (commentId) => {
         if (window.confirm('Sei sicuro di voler eliminare questo commento?')) {
             try {
-                await axios.delete(`http://localhost:3001/comments/${commentId}`, {
-                    data: { userId: user._id }
+                await axios.delete(`${process.env.REACT_APP_API_URL}/comments/${commentId}`, {
+                    data: { userId: user._id },
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
                 });
                 setComments(comments.filter(comment => comment._id !== commentId));
                 setError('');
