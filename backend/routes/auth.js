@@ -11,18 +11,17 @@ router.get('/google',
 // Callback URL per Google
 router.get('/google/callback',
   passport.authenticate('google', { 
-    failureRedirect: `${process.env.FRONTEND_URL}/login`,
+    failureRedirect: 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login',
     session: false 
   }),
   (req, res) => {
     // Genera un token JWT o gestisci la sessione come preferisci
     const user = req.user;
-    // Rimuovi la password dall'oggetto utente
     const userWithoutPassword = { ...user.toObject() };
     delete userWithoutPassword.password;
     
-    // Reindirizza al frontend con i dati dell'utente
-    res.redirect(`${process.env.FRONTEND_URL}/auth/success?user=${encodeURIComponent(JSON.stringify(userWithoutPassword))}`);
+    // Reindirizza al frontend su Vercel
+    res.redirect(`https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/auth/success?user=${encodeURIComponent(JSON.stringify(userWithoutPassword))}`);
   }
 );
 
