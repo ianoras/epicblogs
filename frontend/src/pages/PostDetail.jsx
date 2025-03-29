@@ -7,10 +7,10 @@ import StarRating from '../components/StarRating';
 import axios from 'axios';
 
 const PostDetails = () => {
-    const [post, setPost] = useState({});
+    const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [rating, setRating] = useState(0);
+    const [rating, setRating] = useState(null);
     const [totalRatings, setTotalRatings] = useState(0);
     const [averageRating, setAverageRating] = useState(0);
     const { id } = useParams();
@@ -28,11 +28,12 @@ const PostDetails = () => {
         const fetchPost = async () => {
             try {
                 setLoading(true);
+                const token = localStorage.getItem('token');
                 const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts/${id}`, {
                     withCredentials: true,
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': token ? `Bearer ${token}` : ''
                     }
                 });
                 setPost(response.data);
@@ -47,11 +48,12 @@ const PostDetails = () => {
 
         const fetchRatingStats = async () => {
             try {
+                const token = localStorage.getItem('token');
                 const response = await axios.get(`${process.env.REACT_APP_API_URL}/ratings/${id}/rating`, {
                     withCredentials: true,
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': token ? `Bearer ${token}` : ''
                     }
                 });
                 setTotalRatings(response.data.totalRatings);
@@ -65,11 +67,12 @@ const PostDetails = () => {
             if (!user) return;
             
             try {
+                const token = localStorage.getItem('token');
                 const response = await axios.get(`${process.env.REACT_APP_API_URL}/ratings/${id}/rating/${user._id}`, {
                     withCredentials: true,
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': token ? `Bearer ${token}` : ''
                     }
                 });
                 setRating(response.data.rating);
@@ -143,7 +146,7 @@ const PostDetails = () => {
     };
 
     // Verifica se l'utente è l'autore del post
-    const isAuthor = user && post.author && user._id === post.author._id;
+    const isAuthor = user && post && post.author && user._id === post.author._id;
 
     // Formatta la data in modo leggibile
     const formatDate = (dateString) => {
