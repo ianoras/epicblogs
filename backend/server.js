@@ -98,32 +98,6 @@ app.get('/users/auth/google/callback',
   }
 );
 
-// Aggiungi prima delle altre route
-app.get('/users/auth/google/callback', (req, res) => {
-  console.log('[SERVER] Ricevuta richiesta a /users/auth/google/callback');
-  console.log('[SERVER] Query params:', req.query);
-  
-  // Reindirizza a /auth/google/callback mantenendo i parametri
-  const queryParams = new URLSearchParams(req.query).toString();
-  const redirectUrl = `/auth/google/callback?${queryParams}`;
-  
-  console.log('[SERVER] Reindirizzamento a:', redirectUrl);
-  res.redirect(redirectUrl);
-});
-
-// Aggiungi all'inizio, prima di tutte le altre route
-app.use((req, res, next) => {
-  // Se la richiesta è per il callback OAuth e contiene il parametro code
-  if (req.path.includes('auth/google/callback') && req.query.code) {
-    // Reindirizza sempre al callback corretto
-    const queryString = Object.keys(req.query)
-      .map(key => `${key}=${encodeURIComponent(req.query[key])}`)
-      .join('&');
-    return res.redirect(`https://epicblogs.onrender.com/auth/google/callback?${queryString}`);
-  }
-  next();
-});
-
 // Le altre route
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);

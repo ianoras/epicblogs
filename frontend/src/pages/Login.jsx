@@ -20,11 +20,15 @@ const Login = () => {
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const userDataStr = params.get('user');
+        const token = params.get('token');
 
-        if (userDataStr) {
+        if (userDataStr && token) {
             try {
                 const userData = JSON.parse(decodeURIComponent(userDataStr));
                 console.log('Dati utente ricevuti:', userData);
+                
+                // Salva il token nel localStorage
+                localStorage.setItem('token', token);
                 
                 // Prepara i dati utente
                 const user = {
@@ -86,39 +90,8 @@ const Login = () => {
     };
 
     const handleGoogleLogin = () => {
-        console.log("1. Iniziando il login con Google");
-        
-        // Apri una nuova finestra per l'autenticazione Google
-        const popupWidth = 600;
-        const popupHeight = 600;
-        const left = (window.innerWidth - popupWidth) / 2;
-        const top = (window.innerHeight - popupHeight) / 2;
-        
-        // URL assoluto per l'autenticazione
-        const authUrl = 'https://epicblogs.onrender.com/auth/google';
-        console.log("2. URL di autenticazione:", authUrl);
-        
-        const popup = window.open(
-            authUrl,
-            'googleAuth', 
-            `width=${popupWidth},height=${popupHeight},left=${left},top=${top}`
-        );
-        
-        console.log("3. Popup aperto:", popup ? "Sì" : "No");
-        
-        // Listener per ricevere messaggi dalla finestra popup
-        window.addEventListener('message', (event) => {
-            console.log("4. Ricevuto messaggio:", event.data);
-            if (event.data && event.data.type === 'AUTH_SUCCESS') {
-                console.log("5. Autenticazione riuscita, dati:", event.data);
-                const { user, token } = event.data;
-                if (user) {
-                    console.log("6. Login utente con:", user.firstName, user.lastName);
-                    login(user);
-                    navigate('/', { replace: true });
-                }
-            }
-        }, false);
+        // URL hardcoded per evitare problemi
+        window.location.href = 'https://epicblogs.onrender.com/auth/google';
     };
 
     return (

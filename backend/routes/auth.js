@@ -37,16 +37,16 @@ router.get('/google/callback',
     // Genera il token JWT
     const token = generateToken(user);
     
-    // Imposta il token come cookie
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 24 * 60 * 60 * 1000 // 24 ore
-    });
-
-    // Reindirizza al frontend con i dati dell'utente
-    res.redirect(`https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login?user=${encodeURIComponent(JSON.stringify(userWithoutPassword))}`);
+    // Prepara i dati utente in formato JSON
+    const userData = JSON.stringify(userWithoutPassword);
+    
+    // Crea l'URL completo per il reindirizzamento con token e dati utente
+    const redirectUrl = `https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login?user=${encodeURIComponent(userData)}&token=${token}`;
+    
+    console.log("Reindirizzamento a:", redirectUrl);
+    
+    // Reindirizza al frontend
+    return res.redirect(redirectUrl);
   }
 );
 
