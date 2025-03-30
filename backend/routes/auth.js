@@ -41,14 +41,34 @@ router.get('/google/callback',
     };
     delete userData.password;
 
-    // Modifica qui: invece di inviare una pagina HTML, reindirizza con i parametri
-    const userStr = encodeURIComponent(JSON.stringify(userData));
-    const tokenStr = encodeURIComponent(token);
-    
-    const redirectUrl = `https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login?user=${userStr}&token=${tokenStr}`;
-    
-    console.log('Reindirizzamento a:', redirectUrl.substring(0, 100) + '...');
-    res.redirect(redirectUrl);
+    // Invece di reindirizzare con parametri URL, invia una pagina HTML con script
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Autenticazione in corso...</title>
+        </head>
+        <body>
+          <h3>Autenticazione completata, reindirizzamento in corso...</h3>
+          <script>
+            try {
+              // Salva i dati nel localStorage
+              const token = '${token}';
+              const userData = ${JSON.stringify(userData)};
+              
+              window.localStorage.setItem('token', token);
+              window.localStorage.setItem('user', JSON.stringify(userData));
+              
+              // Reindirizza alla home
+              window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/';
+            } catch (error) {
+              console.error('Errore:', error);
+              window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login?error=' + encodeURIComponent(error.message);
+            }
+          </script>
+        </body>
+      </html>
+    `);
   }
 );
 

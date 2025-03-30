@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import NavigationBar from './components/Navbar';
@@ -36,6 +36,23 @@ function AuthDebugInfo() {
 }
 
 const App = () => {
+    const { login } = useAuth();
+
+    useEffect(() => {
+        // Controlla se ci sono dati di autenticazione nel localStorage
+        const token = localStorage.getItem('token');
+        const userStr = localStorage.getItem('user');
+
+        if (token && userStr) {
+            try {
+                const userData = JSON.parse(userStr);
+                login(userData, token);
+            } catch (error) {
+                console.error('Errore nel recupero dati di autenticazione:', error);
+            }
+        }
+    }, [login]);
+
     return (
         <GoogleOAuthProvider clientId="41646113019-s5als0pklgt17sjdcf0npgtan38dnubo.apps.googleusercontent.com">
             <Router>
