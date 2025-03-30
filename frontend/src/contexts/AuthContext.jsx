@@ -53,7 +53,9 @@ export const AuthProvider = ({ children }) => {
 
   // Login
   const login = (userData, authToken) => {
-    console.log('Login chiamato con:', { userData, authToken });
+    console.log('=== LOGIN CHIAMATO IN AUTHCONTEXT ===');
+    console.log('User data ricevuti:', userData);
+    console.log('Token ricevuto:', authToken ? authToken.substring(0, 20) + '...' : 'null');
     
     try {
       if (!userData || !authToken) {
@@ -61,17 +63,24 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Imposta l'header di autorizzazione
+      console.log('Imposto header di autorizzazione');
       setAuthHeader(authToken);
       
       // Aggiorna lo stato
+      console.log('Aggiorno lo stato');
       setUser(userData);
       setToken(authToken);
       
       // Salva in localStorage
+      console.log('Salvo in localStorage');
       localStorage.setItem('token', authToken);
       localStorage.setItem('user', JSON.stringify(userData));
       
-      console.log('Login completato con successo per:', userData.name || userData.username);
+      console.log('Verifica localStorage dopo il salvataggio:');
+      console.log('localStorage.token:', localStorage.getItem('token'));
+      console.log('localStorage.user:', localStorage.getItem('user'));
+      
+      console.log('Login completato con successo');
       return true;
     } catch (error) {
       console.error('Errore durante il login:', error);

@@ -30,8 +30,12 @@ router.get('/google/callback',
     session: false 
   }),
   (req, res) => {
+    console.log('=== GOOGLE CALLBACK INIZIATO ===');
     const user = req.user;
+    console.log('User ricevuto da passport:', user);
+    
     const token = generateToken(user);
+    console.log('Token generato:', token.substring(0, 20) + '...');
     
     // Prepara i dati utente
     const userData = {
@@ -39,38 +43,45 @@ router.get('/google/callback',
       name: `${user.firstName} ${user.lastName}`
     };
     delete userData.password;
+    console.log('Dati utente preparati:', userData);
 
     const encodedUser = encodeURIComponent(JSON.stringify(userData));
     const encodedToken = encodeURIComponent(token);
-
+    
+    console.log('=== INVIO RISPOSTA HTML ===');
     res.send(`
       <!DOCTYPE html>
       <html>
       <head>
         <title>Autenticazione completata</title>
-      </head>
-      <body>
         <script>
+          console.log('=== SCRIPT DI AUTENTICAZIONE INIZIATO ===');
           try {
             // Salva token
-            localStorage.setItem('token', '${token}');
+            const token = '${token}';
+            console.log('Token da salvare:', token.substring(0, 20) + '...');
+            localStorage.setItem('token', token);
             
             // Salva dati utente
             const userData = ${JSON.stringify(userData)};
+            console.log('Dati utente da salvare:', userData);
             localStorage.setItem('user', JSON.stringify(userData));
             
-            // Imposta axios headers se disponibile
-            if (window.axios) {
-              window.axios.defaults.headers.common['Authorization'] = 'Bearer ${token}';
-            }
+            console.log('Dati salvati in localStorage');
+            console.log('localStorage.token:', localStorage.getItem('token'));
+            console.log('localStorage.user:', localStorage.getItem('user'));
             
             // Reindirizza
+            console.log('Reindirizzamento a /auth-complete');
             window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/auth-complete';
           } catch (error) {
-            console.error('Errore durante il login:', error);
+            console.error('Errore durante il salvataggio:', error);
             window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login?error=' + encodeURIComponent(error.message);
           }
         </script>
+      </head>
+      <body>
+        <h3>Autenticazione in corso...</h3>
       </body>
       </html>
     `);
