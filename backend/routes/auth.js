@@ -37,9 +37,10 @@ router.get('/google/callback',
     console.log('Token generato:', token.substring(0, 20) + '...');
     console.log('User ID:', user._id);
     
-    try {
-      // Rimuovi qualsiasi informazione sensibile
-      const userData = {
+    // Crea un endpoint temporaneo di verifica token
+    const tempToken = "tmp_" + Math.random().toString(36).substring(2, 15);
+    global.tempAuthData = {
+      user: {
         _id: user._id.toString(),
         email: user.email,
         username: user.username,
@@ -48,39 +49,42 @@ router.get('/google/callback',
         profilePicture: user.profilePicture,
         role: user.role,
         name: `${user.firstName} ${user.lastName}`
-      };
-      
-      // Codifica come JSON
-      const userJson = JSON.stringify(userData).replace(/"/g, '\\"');
-      
-      console.log('Dati utente preparati, reindirizzamento alla pagina di auth');
-      
-      // Invia una pagina HTML estremamente semplice
-      res.send(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Autenticazione completata</title>
-          </head>
-          <body>
-            <h2>Autenticazione completata!</h2>
-            <p>Reindirizzamento alla home...</p>
-            <script>
-              // Salva i dati
-              localStorage.setItem("token", "${token}");
-              localStorage.setItem("user", "${userJson}");
-              
-              // Reindirizza immediatamente
-              window.location.href = "https://epicblogs-two.vercel.app/";
-            </script>
-          </body>
-        </html>
-      `);
-    } catch (error) {
-      console.error('Errore nel callback Google:', error);
-      res.redirect('https://epicblogs-two.vercel.app/login?error=' + encodeURIComponent(error.message));
-    }
+      },
+      token,
+      expires: Date.now() + (5 * 60 * 1000) // 5 minuti
+    };
+    
+    console.log('Dati temporanei salvati con codice:', tempToken);
+    
+    // Reindirizza alla pagina di completamento login
+    res.redirect(`https://epicblogs-two.vercel.app/login?tempToken=${tempToken}`);
   }
 );
+
+// Aggiungi un nuovo endpoint per recuperare i dati temporanei
+router.get('/temp-auth/:token', (req, res) => {
+  const { token } = req.params;
+  console.log('Richiesta dati temporanei con token:', token);
+  
+  if (!global.tempAuthData || token !== "tmp_" + token.split('_')[1]) {
+    console.log('Token temporaneo non valido o scaduto');
+    return res.status(401).json({ error: 'Token non valido o scaduto' });
+  }
+  
+  if (global.tempAuthData.expires < Date.now()) {
+    console.log('Token temporaneo scaduto');
+    delete global.tempAuthData;
+    return res.status(401).json({ error: 'Token scaduto' });
+  }
+  
+  const authData = { ...global.tempAuthData };
+  delete global.tempAuthData; // Usa una sola volta
+  
+  console.log('Dati temporanei inviati al client');
+  res.json({
+    user: authData.user,
+    token: authData.token
+  });
+});
 
 export default router; 

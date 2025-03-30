@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Form, Button, Container, Row, Col, Alert, Card, Spinner } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 
 const Login = () => {
@@ -12,62 +11,50 @@ const Login = () => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
     const { login } = useAuth();
 
+    // Gestisce il completamento del login con Google
     useEffect(() => {
-        const handleAuthParams = async () => {
-            console.log('=== CONTROLLO PARAMETRI URL ===');
-            const params = new URLSearchParams(window.location.search);
-            const userParam = params.get('user');
-            const tokenParam = params.get('token');
-
-            console.log('Parametri trovati:', {
-                userParam: userParam ? 'presente' : 'assente',
-                tokenParam: tokenParam ? 'presente' : 'assente'
-            });
-
-            if (userParam && tokenParam) {
-                try {
-                    console.log('Decodifico i parametri...');
-                    const userData = JSON.parse(decodeURIComponent(userParam));
-                    const token = decodeURIComponent(tokenParam);
-
-                    console.log('Dati utente decodificati:', {
-                        id: userData._id,
-                        name: userData.name,
-                        email: userData.email
-                    });
-                    console.log('Token decodificato (primi 20 caratteri):', token.substring(0, 20));
-
-                    // Prima salva in localStorage
-                    console.log('Salvataggio in localStorage...');
-                    localStorage.setItem('user', JSON.stringify(userData));
+        const params = new URLSearchParams(window.location.search);
+        const tempToken = params.get('tempToken');
+        
+        if (tempToken) {
+            setMessage('Completamento autenticazione...');
+            setLoading(true);
+            
+            console.log('Token temporaneo trovato:', tempToken);
+            
+            // Recupera i dati di autenticazione temporanei
+            axios.get(`${process.env.REACT_APP_API_URL}/auth/temp-auth/${tempToken}`)
+                .then(response => {
+                    console.log('Dati autenticazione ricevuti');
+                    const { user, token } = response.data;
+                    
+                    // Salva i dati in localStorage
                     localStorage.setItem('token', token);
-
-                    // Poi effettua il login
-                    console.log('Tentativo di login...');
-                    const success = login(userData, token);
-
+                    localStorage.setItem('user', JSON.stringify(user));
+                    
+                    // Aggiorna lo stato di autenticazione
+                    const success = login(user, token);
+                    
                     if (success) {
-                        console.log('Login riuscito, reindirizzamento alla home...');
-                        // Aggiungi un piccolo ritardo per assicurarti che lo stato sia aggiornato
-                        setTimeout(() => {
-                            navigate('/', { replace: true });
-                        }, 500);
+                        console.log('Login completato con successo');
+                        navigate('/', { replace: true });
                     } else {
-                        console.error('Login fallito dopo il successo del salvataggio');
-                        setError('Errore durante il login');
+                        setError('Errore nell\'aggiornamento dello stato di autenticazione');
                     }
-                } catch (error) {
-                    console.error('Errore durante il processo di login:', error);
-                    setError('Errore durante il login: ' + error.message);
-                }
-            }
-        };
-
-        handleAuthParams();
+                })
+                .catch(err => {
+                    console.error('Errore nel recupero dei dati di autenticazione:', err);
+                    setError('Errore nel completamento dell\'autenticazione');
+                })
+                .finally(() => {
+                    setLoading(false);
+                });
+        }
     }, [location, login, navigate]);
 
     const handleSubmit = async (e) => {
@@ -117,6 +104,7 @@ const Login = () => {
 
     return (
         <Container className="py-5">
+            {message && <Alert variant="info">{message}</Alert>}
             {/* Aggiungi una sezione di debug */}
             <div className="mb-4 p-3 border rounded bg-light">
                 <h5>Debug Info</h5>
@@ -162,14 +150,9 @@ const Login = () => {
                                     </Button>
 
                                     <div className="d-flex justify-content-center my-3">
-                                        <GoogleLogin
-                                            onSuccess={handleGoogleLogin}
-                                            onError={() => setError('Login con Google fallito')}
-                                            useOneTap
-                                            text="continue_with"
-                                            shape="pill"
-                                            locale="it"
-                                        />
+                                        <Button variant="outline-secondary" onClick={handleGoogleLogin}>
+                                            <i className="bi bi-google me-2"></i>Accedi con Google
+                                        </Button>
                                     </div>
                                 </div>
 
