@@ -31,53 +31,45 @@ router.get('/google/callback',
   }),
   (req, res) => {
     const user = req.user;
-    const userWithoutPassword = { ...user.toObject() };
-    delete userWithoutPassword.password;
-    
-    // Genera il token JWT
     const token = generateToken(user);
     
-    // Invia una pagina HTML che fa automaticamente il login e reindirizza
+    // Prepara i dati utente
+    const userData = {
+      ...user.toObject(),
+      name: `${user.firstName} ${user.lastName}`
+    };
+    delete userData.password;
+
+    const encodedUser = encodeURIComponent(JSON.stringify(userData));
+    const encodedToken = encodeURIComponent(token);
+
     res.send(`
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Login completato</title>
-        <style>
-          body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
-          .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #09f; animation: spin 1s linear infinite; margin: 20px auto; }
-          @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        </style>
+        <title>Autenticazione completata</title>
       </head>
       <body>
-        <h1>Login completato</h1>
-        <p>Reindirizzamento in corso...</p>
-        <div class="spinner"></div>
-        
         <script>
-          console.log("Script di autologin avviato");
-          
-          // Salva il token
-          localStorage.setItem('token', '${token}');
-          console.log("Token salvato");
-          
-          // Salva i dati utente
-          const userData = ${JSON.stringify(userWithoutPassword)};
-          userData.name = userData.firstName + ' ' + userData.lastName;
-          localStorage.setItem('user', JSON.stringify(userData));
-          console.log("Dati utente salvati:", userData.firstName, userData.lastName);
-          
-          // Imposta l'header di autorizzazione per axios se c'è
-          if (window.axios) {
-            window.axios.defaults.headers.common['Authorization'] = 'Bearer ${token}';
-            console.log("Header Authorization impostato");
+          try {
+            // Salva token
+            localStorage.setItem('token', '${token}');
+            
+            // Salva dati utente
+            const userData = ${JSON.stringify(userData)};
+            localStorage.setItem('user', JSON.stringify(userData));
+            
+            // Imposta axios headers se disponibile
+            if (window.axios) {
+              window.axios.defaults.headers.common['Authorization'] = 'Bearer ${token}';
+            }
+            
+            // Reindirizza
+            window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/auth-complete';
+          } catch (error) {
+            console.error('Errore durante il login:', error);
+            window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login?error=' + encodeURIComponent(error.message);
           }
-          
-          // Reindirizza alla home
-          console.log("Reindirizzamento alla home");
-          setTimeout(() => {
-            window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/';
-          }, 1000);
         </script>
       </body>
       </html>

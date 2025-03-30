@@ -134,8 +134,7 @@ const Login = () => {
     };
 
     const handleGoogleLogin = () => {
-        // URL hardcoded per evitare problemi
-        window.location.href = 'https://epicblogs.onrender.com/auth/google';
+        window.location.href = `${process.env.REACT_APP_API_URL}/auth/google`;
     };
 
     return (

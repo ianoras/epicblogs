@@ -9,10 +9,10 @@ import Login from './pages/Login';
 import MyPosts from './pages/MyPosts';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
-import AuthDebug from './components/AuthDebug';
 import { useAuth } from './contexts/AuthContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import AuthComplete from './pages/AuthComplete';
 
 function AuthDebugInfo() {
     const { isAuthenticated, user, token } = useAuth();
@@ -50,6 +50,7 @@ const App = () => {
                             <Route path="/register" element={<Register />} />
                             <Route path="/my-posts" element={<MyPosts />} />
                             <Route path="/profile" element={<Profile />} />
+                            <Route path="/auth-complete" element={<AuthComplete />} />
                         </Routes>
                     </main>
                     <footer className="footer mt-auto">
@@ -82,7 +83,6 @@ const App = () => {
                             </div>
                         </div>
                     </footer>
-                    <AuthDebug />
                     <AuthDebugInfo />
                     <ToastContainer />
                 </div>

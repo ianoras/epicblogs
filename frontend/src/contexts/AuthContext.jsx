@@ -56,16 +56,20 @@ export const AuthProvider = ({ children }) => {
     console.log('Login chiamato con:', { userData, authToken });
     
     try {
-      // Salva in localStorage
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('token', authToken);
+      if (!userData || !authToken) {
+        throw new Error('Dati di login mancanti');
+      }
+
+      // Imposta l'header di autorizzazione
+      setAuthHeader(authToken);
       
       // Aggiorna lo stato
       setUser(userData);
       setToken(authToken);
       
-      // Imposta l'header di autorizzazione
-      setAuthHeader(authToken);
+      // Salva in localStorage
+      localStorage.setItem('token', authToken);
+      localStorage.setItem('user', JSON.stringify(userData));
       
       console.log('Login completato con successo per:', userData.name || userData.username);
       return true;
