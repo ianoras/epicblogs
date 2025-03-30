@@ -26,7 +26,7 @@ router.get('/google',
 // Callback URL per Google
 router.get('/google/callback',
   passport.authenticate('google', { 
-    failureRedirect: 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login',
+    failureRedirect: 'https://epicblogs-two.vercel.app/login',
     session: false 
   }),
   (req, res) => {
@@ -41,6 +41,9 @@ router.get('/google/callback',
     };
     delete userData.password;
 
+    // Correggi la sintassi JSON
+    const safeUserData = JSON.stringify(userData).replace(/'/g, "\\'");
+
     // Invia una pagina HTML che salva i dati e reindirizza
     res.send(`
       <!DOCTYPE html>
@@ -50,24 +53,18 @@ router.get('/google/callback',
           <script>
             function completeAuth() {
               try {
-                // Salva token e user nei cookies (più affidabile su alcuni browser)
-                document.cookie = "auth_token=${token}; path=/; max-age=86400; SameSite=None; Secure";
-                document.cookie = "auth_user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=86400; SameSite=None; Secure";
-                
-                // Salva anche in localStorage come backup
+                // Salva token e user in localStorage
                 localStorage.setItem('token', '${token}');
-                localStorage.setItem('user', JSON.stringify(${JSON.stringify(userData)}));
+                localStorage.setItem('user', '${safeUserData}');
                 
-                // Debug info
-                console.log('Token salvato nei cookie e localStorage');
-                console.log('User salvato nei cookie e localStorage');
+                console.log('Token e utente salvati in localStorage');
                 
-                // Reindirizza con parametri extra per sicurezza
-                window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/?auth=true&ts=' + Date.now();
+                // Reindirizza alla home
+                window.location.href = 'https://epicblogs-two.vercel.app/';
               } catch (error) {
                 console.error('Errore durante il salvataggio:', error);
-                alert('Si è verificato un errore durante l\'autenticazione: ' + error.message);
-                window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login?error=' + encodeURIComponent(error.message);
+                alert('Si è verificato un errore durante l\\'autenticazione: ' + error.message);
+                window.location.href = 'https://epicblogs-two.vercel.app/login?error=' + encodeURIComponent(error.message);
               }
             }
           </script>

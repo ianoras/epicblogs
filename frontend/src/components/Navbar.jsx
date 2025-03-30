@@ -4,8 +4,24 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const NavigationBar = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, login } = useAuth();
   const navigate = useNavigate();
+
+  // Controllo dello stato all'avvio
+  useEffect(() => {
+    // Verifica se ci sono dati nel localStorage
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    
+    if (token && userStr && !isAuthenticated) {
+      try {
+        const userData = JSON.parse(userStr);
+        login(userData, token);
+      } catch (error) {
+        console.error('Errore nel caricamento dello stato utente:', error);
+      }
+    }
+  }, [isAuthenticated, login]);
 
   // Debug render
   useEffect(() => {

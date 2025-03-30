@@ -19,17 +19,31 @@ dotenv.config();
 
 const app = express();
 
-// Aggiorna la configurazione CORS
+// Configura CORS correttamente
 app.use(cors({
-    origin: ['https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app', 'http://localhost:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+  origin: [
+    'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app',
+    'https://epicblogs-two.vercel.app',
+    'http://localhost:3000'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Aggiungi questo prima delle route per debug
+// Middleware per debugging
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
+  
+  // Aggiungi manualmente gli header CORS per sicurezza
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
   next();
 });
 
