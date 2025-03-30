@@ -26,38 +26,24 @@ router.get('/google',
 // Callback URL per Google
 router.get('/google/callback',
   passport.authenticate('google', { 
-    failureRedirect: 'https://epicblogs-two.vercel.app/login?error=auth_failed',
+    failureRedirect: 'https://epicblogs-two.vercel.app/login',
     session: false 
   }),
   (req, res) => {
-    console.log('=== GOOGLE CALLBACK INIZIATO ===');
+    // Genera un token JWT
     const user = req.user;
     const token = generateToken(user);
     
-    console.log('Token generato:', token.substring(0, 20) + '...');
-    console.log('User ID:', user._id);
+    // Rimuovi la password dall'oggetto utente
+    const userWithoutPassword = { ...user.toObject() };
+    delete userWithoutPassword.password;
     
-    // Crea un endpoint temporaneo di verifica token
-    const tempToken = "tmp_" + Math.random().toString(36).substring(2, 15);
-    global.tempAuthData = {
-      user: {
-        _id: user._id.toString(),
-        email: user.email,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profilePicture: user.profilePicture,
-        role: user.role,
-        name: `${user.firstName} ${user.lastName}`
-      },
-      token,
-      expires: Date.now() + (5 * 60 * 1000) // 5 minuti
-    };
+    // Aggiungi il token all'oggetto utente
+    userWithoutPassword.token = token;
     
-    console.log('Dati temporanei salvati con codice:', tempToken);
-    
-    // Reindirizza alla pagina di completamento login
-    res.redirect(`https://epicblogs-two.vercel.app/login?tempToken=${tempToken}`);
+    // Reindirizza al frontend con i dati dell'utente
+    console.log('Reindirizzamento a frontend con dati utente');
+    res.redirect(`https://epicblogs-two.vercel.app/login?success=true&user=${encodeURIComponent(JSON.stringify(userWithoutPassword))}`);
   }
 );
 

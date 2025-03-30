@@ -10,87 +10,72 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [timestamp, setTimestamp] = useState(new Date().getTime());
 
-  // Inizializzazione
   useEffect(() => {
-    console.log('AuthContext: inizializzazione');
+    // Controlla se c'è un utente salvato nel localStorage
+    const savedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
     
-    try {
-      const savedToken = localStorage.getItem('token');
-      const savedUserStr = localStorage.getItem('user');
-      
-      if (savedToken && savedUserStr) {
-        const savedUser = JSON.parse(savedUserStr);
-        console.log('AuthContext: dati trovati in localStorage');
+    if (savedUser && token) {
+      try {
+        const userData = JSON.parse(savedUser);
+        setUser(userData);
         
-        setUser(savedUser);
-        setToken(savedToken);
-        
-        // Configura axios
-        axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+        // Imposta il token nelle richieste axios
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      } catch (error) {
+        console.error('Errore nel parsing dei dati utente salvati:', error);
+        // Se c'è un errore, pulisci il localStorage
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
       }
-    } catch (error) {
-      console.error('AuthContext: errore durante l\'inizializzazione', error);
     }
+    
+    setLoading(false);
   }, []);
 
-  // Login
-  const login = (userData, authToken) => {
-    console.log('AuthContext: login chiamato');
+  const login = (userData) => {
+    console.log('Login con dati:', userData);
+    setUser(userData);
     
-    try {
-      // Log dettagliati
-      console.log('AuthContext: salvataggio dati utente', {
-        id: userData._id,
-        name: userData.name || userData.username
-      });
-      console.log('AuthContext: salvataggio token (primi caratteri)', authToken.substring(0, 15));
-      
-      // Salva i dati
-      localStorage.setItem('token', authToken);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Aggiorna lo stato
-      setUser(userData);
-      setToken(authToken);
-      
-      // Configura axios
-      axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
-      
-      console.log('AuthContext: login completato con successo');
-      return true;
-    } catch (error) {
-      console.error('AuthContext: errore durante il login', error);
-      return false;
+    // Imposta il token nelle richieste axios se presente
+    if (userData.token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
     }
   };
 
-  // Logout
   const logout = () => {
-    console.log('AuthContext: logout chiamato');
-    
-    // Rimuovi i dati
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    
-    // Aggiorna lo stato
     setUser(null);
-    setToken(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
     
-    // Rimuovi la configurazione di axios
+    // Rimuovi il token dalle richieste axios
     delete axios.defaults.headers.common['Authorization'];
+  };
+
+  const updateUser = (updatedUserData) => {
+    setUser(updatedUserData);
+    localStorage.setItem('user', JSON.stringify(updatedUserData));
+    // Aggiorna il timestamp quando l'utente viene aggiornato
+    setTimestamp(new Date().getTime());
   };
 
   const value = {
     user,
-    token,
-    isAuthenticated: !!user,
     login,
-    logout
+    logout,
+    updateUser,
+    loading,
+    timestamp
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };
 
 export default AuthContext;

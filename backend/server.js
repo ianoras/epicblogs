@@ -19,34 +19,17 @@ dotenv.config();
 
 const app = express();
 
+// Configurazione CORS per permettere le richieste
+app.use(cors({
+    origin: ['https://epicblogs-two.vercel.app', 'http://localhost:3000', 'https://accounts.google.com'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // Middleware per logging
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
-  next();
-});
-
-// Configura CORS correttamente (posiziona questo PRIMA di qualsiasi altra middleware)
-app.use((req, res, next) => {
-  // Permetti solo le origini specifiche
-  const allowedOrigins = [
-    'https://epicblogs-two.vercel.app',
-    'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app',
-    'http://localhost:3000'
-  ];
-  
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  }
-  
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  
   next();
 });
 

@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react';
 import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
 
 const NavigationBar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const [checked, setChecked] = useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [predefinedCategories, setPredefinedCategories] = useState([]);
 
   // Verifica stato autenticazione all'avvio
   useEffect(() => {
@@ -29,6 +32,24 @@ const NavigationBar = () => {
     console.log('Navbar: user =', user);
     setChecked(true);
   }, [isAuthenticated, user]);
+
+  // Carica le categorie disponibili
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts/categories`);
+        
+        // ... resto del codice ...
+      } catch (error) {
+        console.error('Errore nel caricamento delle categorie:', error);
+        // ... gestione dell'errore ...
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, [predefinedCategories]);
 
   const handleLogout = () => {
     logout();

@@ -16,44 +16,47 @@ const Login = () => {
     const location = useLocation();
     const { login } = useAuth();
 
-    // Gestisce il completamento del login con Google
+    // Gestisce il login con Google quando l'utente ritorna
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const tempToken = params.get('tempToken');
-        
-        if (tempToken) {
-            setMessage('Completamento autenticazione...');
-            setLoading(true);
-            
-            console.log('Token temporaneo trovato:', tempToken);
-            
-            // Recupera i dati di autenticazione temporanei
-            axios.get(`${process.env.REACT_APP_API_URL}/auth/temp-auth/${tempToken}`)
-                .then(response => {
-                    console.log('Dati autenticazione ricevuti');
-                    const { user, token } = response.data;
-                    
-                    // Salva i dati in localStorage
-                    localStorage.setItem('token', token);
-                    localStorage.setItem('user', JSON.stringify(user));
-                    
-                    // Aggiorna lo stato di autenticazione
-                    const success = login(user, token);
-                    
-                    if (success) {
-                        console.log('Login completato con successo');
-                        navigate('/', { replace: true });
-                    } else {
-                        setError('Errore nell\'aggiornamento dello stato di autenticazione');
-                    }
-                })
-                .catch(err => {
-                    console.error('Errore nel recupero dei dati di autenticazione:', err);
-                    setError('Errore nel completamento dell\'autenticazione');
-                })
-                .finally(() => {
-                    setLoading(false);
-                });
+        const params = new URLSearchParams(location.search);
+        const userDataStr = params.get('user');
+        const success = params.get('success');
+        const error = params.get('error');
+
+        if (error) {
+            setError('Errore durante il login con Google');
+            return;
+        }
+
+        if (userDataStr && success) {
+            try {
+                const data = JSON.parse(decodeURIComponent(userDataStr));
+                console.log('Dati utente ricevuti:', data);
+                
+                // Salva il token nel localStorage
+                localStorage.setItem('token', data.token);
+                
+                // Prepara i dati utente
+                const user = {
+                    ...data,
+                    name: `${data.firstName} ${data.lastName}`
+                };
+                
+                // Salva l'utente nel localStorage
+                localStorage.setItem('user', JSON.stringify(user));
+                
+                // Effettua il login
+                login(user);
+                
+                // Usa un timeout per assicurarsi che il login sia completato
+                setTimeout(() => {
+                    // Usa window.location invece di navigate per un refresh completo
+                    window.location.href = '/';
+                }, 100);
+            } catch (error) {
+                console.error('Errore nel parsing dei dati utente:', error);
+                setError('Errore durante il login con Google');
+            }
         }
     }, [location, login, navigate]);
 
