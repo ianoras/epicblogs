@@ -45,13 +45,7 @@ const Home = () => {
           url += `&category=${selectedCategory}`;
         }
         
-        const response = await axios.get(url, {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+        const response = await axios.get(url);
         
         setPosts(response.data.posts || []);
         setTotalPages(response.data.totalPages || 1);
@@ -71,13 +65,7 @@ const Home = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts/categories`, {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts/categories`);
         
         const categoryCounts = {};
         if (response.data && response.data.categories) {

@@ -5,8 +5,9 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import axios from 'axios';
 
-// Configura axios
-axios.defaults.withCredentials = true;
+// Configura axios SENZA withCredentials
+axios.defaults.withCredentials = false;
+axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 // Setup headers per ogni richiesta
 axios.interceptors.request.use(

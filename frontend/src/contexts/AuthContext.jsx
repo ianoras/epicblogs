@@ -40,6 +40,13 @@ export const AuthProvider = ({ children }) => {
     console.log('AuthContext: login chiamato');
     
     try {
+      // Log dettagliati
+      console.log('AuthContext: salvataggio dati utente', {
+        id: userData._id,
+        name: userData.name || userData.username
+      });
+      console.log('AuthContext: salvataggio token (primi caratteri)', authToken.substring(0, 15));
+      
       // Salva i dati
       localStorage.setItem('token', authToken);
       localStorage.setItem('user', JSON.stringify(userData));
@@ -51,6 +58,7 @@ export const AuthProvider = ({ children }) => {
       // Configura axios
       axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
       
+      console.log('AuthContext: login completato con successo');
       return true;
     } catch (error) {
       console.error('AuthContext: errore durante il login', error);
