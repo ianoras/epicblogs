@@ -41,31 +41,41 @@ router.get('/google/callback',
     };
     delete userData.password;
 
-    // Invece di reindirizzare con parametri URL, invia una pagina HTML con script
+    // Invia una pagina HTML che salva i dati e reindirizza
     res.send(`
       <!DOCTYPE html>
       <html>
         <head>
           <title>Autenticazione in corso...</title>
-        </head>
-        <body>
-          <h3>Autenticazione completata, reindirizzamento in corso...</h3>
           <script>
-            try {
-              // Salva i dati nel localStorage
-              const token = '${token}';
-              const userData = ${JSON.stringify(userData)};
-              
-              window.localStorage.setItem('token', token);
-              window.localStorage.setItem('user', JSON.stringify(userData));
-              
-              // Reindirizza alla home
-              window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/';
-            } catch (error) {
-              console.error('Errore:', error);
-              window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login?error=' + encodeURIComponent(error.message);
+            function completeAuth() {
+              try {
+                // Salva token e user nei cookies (più affidabile su alcuni browser)
+                document.cookie = "auth_token=${token}; path=/; max-age=86400; SameSite=None; Secure";
+                document.cookie = "auth_user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=86400; SameSite=None; Secure";
+                
+                // Salva anche in localStorage come backup
+                localStorage.setItem('token', '${token}');
+                localStorage.setItem('user', JSON.stringify(${JSON.stringify(userData)}));
+                
+                // Debug info
+                console.log('Token salvato nei cookie e localStorage');
+                console.log('User salvato nei cookie e localStorage');
+                
+                // Reindirizza con parametri extra per sicurezza
+                window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/?auth=true&ts=' + Date.now();
+              } catch (error) {
+                console.error('Errore durante il salvataggio:', error);
+                alert('Si è verificato un errore durante l\'autenticazione: ' + error.message);
+                window.location.href = 'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app/login?error=' + encodeURIComponent(error.message);
+              }
             }
           </script>
+        </head>
+        <body onload="setTimeout(completeAuth, 500)">
+          <h2>Autenticazione completata!</h2>
+          <p>Salvataggio dati e reindirizzamento in corso...</p>
+          <button onclick="completeAuth()">Clicca qui se non vieni reindirizzato automaticamente</button>
         </body>
       </html>
     `);

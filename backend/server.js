@@ -21,19 +21,17 @@ const app = express();
 
 // Aggiorna la configurazione CORS
 app.use(cors({
-    origin: [
-        'http://localhost:3000', 
-        'https://accounts.google.com',
-        'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app',
-        'https://epicblogs-two.vercel.app'
-    ],
+    origin: ['https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app', 'http://localhost:3000'],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['Authorization'],
-    preflightContinue: false,
-    optionsSuccessStatus: 204
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Aggiungi questo prima delle route per debug
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
+  next();
+});
 
 // Aggiungi/aggiorna la configurazione delle sessioni
 app.use(session({

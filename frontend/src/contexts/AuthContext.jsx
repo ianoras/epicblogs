@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
   const setAuthHeader = (token) => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      console.log('Header di autorizzazione impostato:', token);
+      console.log('Header di autorizzazione impostato');
     } else {
       delete axios.defaults.headers.common['Authorization'];
       console.log('Header di autorizzazione rimosso');
@@ -53,34 +53,30 @@ export const AuthProvider = ({ children }) => {
 
   // Login
   const login = (userData, authToken) => {
-    console.log('=== LOGIN CHIAMATO IN AUTHCONTEXT ===');
-    console.log('User data ricevuti:', userData);
-    console.log('Token ricevuto:', authToken ? authToken.substring(0, 20) + '...' : 'null');
+    console.log('LOGIN chiamato in AuthContext');
     
-    try {
-      if (!userData || !authToken) {
-        throw new Error('Dati di login mancanti');
-      }
+    if (!userData || !authToken) {
+      console.error('Dati di login mancanti');
+      return false;
+    }
 
+    try {
       // Imposta l'header di autorizzazione
-      console.log('Imposto header di autorizzazione');
       setAuthHeader(authToken);
       
       // Aggiorna lo stato
-      console.log('Aggiorno lo stato');
       setUser(userData);
       setToken(authToken);
       
       // Salva in localStorage
-      console.log('Salvo in localStorage');
       localStorage.setItem('token', authToken);
       localStorage.setItem('user', JSON.stringify(userData));
       
-      console.log('Verifica localStorage dopo il salvataggio:');
-      console.log('localStorage.token:', localStorage.getItem('token'));
-      console.log('localStorage.user:', localStorage.getItem('user'));
+      // Forza un render per aggiornare la UI
+      setTimeout(() => {
+        console.log('Stato aggiornato, utente:', userData.name);
+      }, 0);
       
-      console.log('Login completato con successo');
       return true;
     } catch (error) {
       console.error('Errore durante il login:', error);
