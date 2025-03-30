@@ -16,80 +16,58 @@ const Login = () => {
     const location = useLocation();
     const { login } = useAuth();
 
-    // Gestisce il login con Google quando l'utente ritorna
     useEffect(() => {
-        console.log("Login useEffect - search params:", location.search);
-        const params = new URLSearchParams(location.search);
-        const userDataStr = params.get('user');
-        const token = params.get('token');
+        const handleAuthParams = async () => {
+            console.log('=== CONTROLLO PARAMETRI URL ===');
+            const params = new URLSearchParams(window.location.search);
+            const userParam = params.get('user');
+            const tokenParam = params.get('token');
 
-        console.log("User data string:", userDataStr ? userDataStr.substring(0, 50) + "..." : "null");
-        console.log("Token:", token ? token.substring(0, 20) + "..." : "null");
+            console.log('Parametri trovati:', {
+                userParam: userParam ? 'presente' : 'assente',
+                tokenParam: tokenParam ? 'presente' : 'assente'
+            });
 
-        if (userDataStr && token) {
-            try {
-                const userData = JSON.parse(decodeURIComponent(userDataStr));
-                console.log('Dati utente decodificati:', userData);
-                
-                // Salva il token nel localStorage
-                localStorage.setItem('token', token);
-                
-                // Prepara i dati utente
-                const user = {
-                    ...userData,
-                    name: `${userData.firstName} ${userData.lastName}`
-                };
-                
-                // Salva l'utente nel localStorage
-                localStorage.setItem('user', JSON.stringify(user));
-                
-                // Effettua il login
-                login(user);
-                
-                // Reindirizza alla home
-                console.log("Reindirizzamento alla home");
-                setTimeout(() => {
-                    navigate('/', { replace: true });
-                }, 100);
-            } catch (error) {
-                console.error('Errore nel parsing dei dati utente:', error);
-                setError('Errore durante il login con Google: ' + error.message);
-            }
-        }
-    }, [location, login, navigate]);
+            if (userParam && tokenParam) {
+                try {
+                    console.log('Decodifico i parametri...');
+                    const userData = JSON.parse(decodeURIComponent(userParam));
+                    const token = decodeURIComponent(tokenParam);
 
-    useEffect(() => {
-        console.log('=== LOGIN PAGE LOADED ===');
-        const params = new URLSearchParams(location.search);
-        const userParam = params.get('user');
-        const tokenParam = params.get('token');
-        
-        console.log('Parametri URL trovati:', {
-            hasUser: !!userParam,
-            hasToken: !!tokenParam
-        });
+                    console.log('Dati utente decodificati:', {
+                        id: userData._id,
+                        name: userData.name,
+                        email: userData.email
+                    });
+                    console.log('Token decodificato (primi 20 caratteri):', token.substring(0, 20));
 
-        if (userParam && tokenParam) {
-            try {
-                const userData = JSON.parse(decodeURIComponent(userParam));
-                const token = decodeURIComponent(tokenParam);
-                
-                console.log('Dati utente decodificati:', userData);
-                console.log('Token decodificato:', token.substring(0, 20) + '...');
-                
-                // Effettua il login
-                const success = login(userData, token);
-                
-                if (success) {
-                    console.log('Login completato con successo, reindirizzamento...');
-                    navigate('/', { replace: true });
-                } else {
-                    console.error('Login fallito');
+                    // Prima salva in localStorage
+                    console.log('Salvataggio in localStorage...');
+                    localStorage.setItem('user', JSON.stringify(userData));
+                    localStorage.setItem('token', token);
+
+                    // Poi effettua il login
+                    console.log('Tentativo di login...');
+                    const success = login(userData, token);
+
+                    if (success) {
+                        console.log('Login riuscito, reindirizzamento alla home...');
+                        // Aggiungi un piccolo ritardo per assicurarti che lo stato sia aggiornato
+                        setTimeout(() => {
+                            navigate('/', { replace: true });
+                        }, 500);
+                    } else {
+                        console.error('Login fallito dopo il successo del salvataggio');
+                        setError('Errore durante il login');
+                    }
+                } catch (error) {
+                    console.error('Errore durante il processo di login:', error);
+                    setError('Errore durante il login: ' + error.message);
                 }
-            } catch (error) {
-                console.error('Errore nel processo di login:', error);
             }
-        }
+        };
+
+        handleAuthParams();
     }, [location, login, navigate]);
 
     const handleSubmit = async (e) => {
@@ -139,12 +117,13 @@ const Login = () => {
 
     return (
         <Container className="py-5">
-            {/* Debug info - Solo per test */}
+            {/* Aggiungi una sezione di debug */}
             <div className="mb-4 p-3 border rounded bg-light">
-                <h5>Debug Info (rimuovere in produzione)</h5>
-                <p>URL search: {location.search}</p>
-                <p>Has user param: {new URLSearchParams(location.search).has('user').toString()}</p>
-                <p>Has token param: {new URLSearchParams(location.search).has('token').toString()}</p>
+                <h5>Debug Info</h5>
+                <p>URL: {window.location.href}</p>
+                <p>Search Params: {window.location.search}</p>
+                <p>LocalStorage Token: {localStorage.getItem('token') ? 'Presente' : 'Assente'}</p>
+                <p>LocalStorage User: {localStorage.getItem('user') ? 'Presente' : 'Assente'}</p>
             </div>
             
             <Row className="justify-content-center">
