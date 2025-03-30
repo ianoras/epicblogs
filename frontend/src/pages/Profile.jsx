@@ -48,15 +48,16 @@ const Profile = () => {
     setLoading(true);
 
     try {
+      if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
+        throw new Error('Le password non coincidono');
+      }
+
       const formDataToSend = new FormData();
       formDataToSend.append('firstName', formData.firstName);
       formDataToSend.append('lastName', formData.lastName);
       formDataToSend.append('email', formData.email);
       
       if (formData.newPassword) {
-        if (formData.newPassword !== formData.confirmPassword) {
-          throw new Error('Le password non coincidono');
-        }
         formDataToSend.append('currentPassword', formData.currentPassword);
         formDataToSend.append('newPassword', formData.newPassword);
       }
@@ -65,16 +66,29 @@ const Profile = () => {
         formDataToSend.append('profilePicture', profileImage);
       }
 
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Token non trovato. Effettua il login.');
+      }
+
+      if (!user || !user._id) {
+        throw new Error('Dati utente mancanti. Effettua nuovamente il login.');
+      }
+
+      console.log('Aggiornamento profilo utente con ID:', user._id);
+      
       const response = await axios.put(
-        `${process.env.REACT_APP_API_URL}/users/profile`,
+        `${process.env.REACT_APP_API_URL}/users/${user._id}`,
         formDataToSend,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${token}`
           }
         }
       );
+
+      console.log('Risposta aggiornamento profilo:', response.data);
 
       const updatedUser = {
         ...user,
@@ -93,7 +107,7 @@ const Profile = () => {
       }));
     } catch (err) {
       console.error('Errore aggiornamento profilo:', err);
-      setError(err.response?.data?.message || 'Errore durante l\'aggiornamento del profilo');
+      setError(err.response?.data?.message || err.message || 'Errore durante l\'aggiornamento del profilo');
     } finally {
       setLoading(false);
     }

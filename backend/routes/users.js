@@ -158,7 +158,7 @@ router.post("/:id/upload-profile-picture", upload.single('profilePicture'), asyn
 // PUT update
 router.put("/:id", upload.single('profilePicture'), async (req, res) => {
     try {
-      const { firstName, lastName, currentPassword, newPassword } = req.body;
+      const { firstName, lastName, email, currentPassword, newPassword } = req.body;
       const user = await User.findById(req.params.id);
   
       if (!user) {
@@ -167,14 +167,21 @@ router.put("/:id", upload.single('profilePicture'), async (req, res) => {
   
       // Verifica password attuale se si sta tentando di cambiarla
       if (newPassword && currentPassword) {
-        if (user.password !== currentPassword) {
+        // Usa bcrypt per confrontare le password
+        const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+        if (!isValidPassword) {
           return res.status(401).json({ message: "Password attuale non corretta" });
         }
-        user.password = newPassword;
+        
+        // Cripta la nuova password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        user.password = hashedPassword;
       }
   
       user.firstName = firstName || user.firstName;
       user.lastName = lastName || user.lastName;
+      if (email) user.email = email;
       
       // Aggiorna l'immagine del profilo se è stata caricata
       if (req.file) {
