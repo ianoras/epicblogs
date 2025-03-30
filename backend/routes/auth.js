@@ -26,7 +26,7 @@ router.get('/google',
 // Callback URL per Google
 router.get('/google/callback',
   passport.authenticate('google', { 
-    failureRedirect: 'https://epicblogs-two.vercel.app/login',
+    failureRedirect: 'https://epicblogs-two.vercel.app/login?error=auth_failed',
     session: false 
   }),
   (req, res) => {
@@ -34,48 +34,52 @@ router.get('/google/callback',
     const user = req.user;
     const token = generateToken(user);
     
-    // Prepara i dati utente
-    const userData = {
-      ...user.toObject(),
-      name: `${user.firstName} ${user.lastName}`
-    };
-    delete userData.password;
-
-    // Correggi la sintassi JSON
-    const safeUserData = JSON.stringify(userData).replace(/'/g, "\\'");
-
-    // Invia una pagina HTML che salva i dati e reindirizza
-    res.send(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Autenticazione in corso...</title>
-          <script>
-            function completeAuth() {
-              try {
-                // Salva token e user in localStorage
-                localStorage.setItem('token', '${token}');
-                localStorage.setItem('user', '${safeUserData}');
-                
-                console.log('Token e utente salvati in localStorage');
-                
-                // Reindirizza alla home
-                window.location.href = 'https://epicblogs-two.vercel.app/';
-              } catch (error) {
-                console.error('Errore durante il salvataggio:', error);
-                alert('Si è verificato un errore durante l\\'autenticazione: ' + error.message);
-                window.location.href = 'https://epicblogs-two.vercel.app/login?error=' + encodeURIComponent(error.message);
-              }
-            }
-          </script>
-        </head>
-        <body onload="setTimeout(completeAuth, 500)">
-          <h2>Autenticazione completata!</h2>
-          <p>Salvataggio dati e reindirizzamento in corso...</p>
-          <button onclick="completeAuth()">Clicca qui se non vieni reindirizzato automaticamente</button>
-        </body>
-      </html>
-    `);
+    console.log('Token generato:', token.substring(0, 20) + '...');
+    console.log('User ID:', user._id);
+    
+    try {
+      // Rimuovi qualsiasi informazione sensibile
+      const userData = {
+        _id: user._id.toString(),
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profilePicture: user.profilePicture,
+        role: user.role,
+        name: `${user.firstName} ${user.lastName}`
+      };
+      
+      // Codifica come JSON
+      const userJson = JSON.stringify(userData).replace(/"/g, '\\"');
+      
+      console.log('Dati utente preparati, reindirizzamento alla pagina di auth');
+      
+      // Invia una pagina HTML estremamente semplice
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Autenticazione completata</title>
+          </head>
+          <body>
+            <h2>Autenticazione completata!</h2>
+            <p>Reindirizzamento alla home...</p>
+            <script>
+              // Salva i dati
+              localStorage.setItem("token", "${token}");
+              localStorage.setItem("user", "${userJson}");
+              
+              // Reindirizza immediatamente
+              window.location.href = "https://epicblogs-two.vercel.app/";
+            </script>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error('Errore nel callback Google:', error);
+      res.redirect('https://epicblogs-two.vercel.app/login?error=' + encodeURIComponent(error.message));
+    }
   }
 );
 

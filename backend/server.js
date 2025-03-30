@@ -19,23 +19,22 @@ dotenv.config();
 
 const app = express();
 
-// Configura CORS correttamente
+// Middleware per logging
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
+  next();
+});
+
+// Configura CORS in modo permissivo
 app.use(cors({
-  origin: [
-    'https://epicblogs-kifgyna5o-francescos-projects-302b915e.vercel.app',
-    'https://epicblogs-two.vercel.app',
-    'http://localhost:3000'
-  ],
+  origin: true, // Consente qualsiasi origine
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Middleware per debugging
+// Middleware per aggiungere manualmente gli header CORS
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
-  
-  // Aggiungi manualmente gli header CORS per sicurezza
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');

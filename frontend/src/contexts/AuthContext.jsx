@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { saveAuth, loadAuth, clearAuth, isAuthenticated } from '../utils/auth';
 
 // Aggiungi queste configurazioni dopo gli imports
 axios.defaults.withCredentials = true;
@@ -16,67 +17,39 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Funzione per impostare i header di Axios
-  const setAuthHeader = (token) => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      console.log('Header di autorizzazione impostato');
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-      console.log('Header di autorizzazione rimosso');
-    }
-  };
-
   // Inizializzazione - controlla localStorage al caricamento
   useEffect(() => {
-    console.log('AuthContext inizializzato, verifico localStorage');
+    console.log('AuthContext inizializzato');
     
-    try {
-      const savedUser = localStorage.getItem('user');
-      const savedToken = localStorage.getItem('token');
+    const authData = loadAuth();
+    if (authData) {
+      console.log('Utente trovato in localStorage:', authData.user.name);
+      setUser(authData.user);
+      setToken(authData.token);
       
-      console.log('Dati trovati in localStorage:', { savedUser: !!savedUser, savedToken: !!savedToken });
-      
-      if (savedToken && savedUser) {
-        const parsedUser = JSON.parse(savedUser);
-        setUser(parsedUser);
-        setToken(savedToken);
-        setAuthHeader(savedToken);
-        console.log('Utente caricato da localStorage:', parsedUser.name || parsedUser.username);
-      }
-    } catch (error) {
-      console.error('Errore nel recupero dati da localStorage:', error);
-    } finally {
-      setLoading(false);
+      // Imposta l'header di autorizzazione
+      axios.defaults.headers.common['Authorization'] = `Bearer ${authData.token}`;
     }
+    
+    setLoading(false);
   }, []);
 
   // Login
   const login = (userData, authToken) => {
-    console.log('LOGIN chiamato in AuthContext');
+    console.log('Login chiamato in AuthContext');
     
-    if (!userData || !authToken) {
-      console.error('Dati di login mancanti');
-      return false;
-    }
-
     try {
-      // Imposta l'header di autorizzazione
-      setAuthHeader(authToken);
+      // Salva i dati
+      saveAuth(authToken, userData);
       
       // Aggiorna lo stato
       setUser(userData);
       setToken(authToken);
       
-      // Salva in localStorage
-      localStorage.setItem('token', authToken);
-      localStorage.setItem('user', JSON.stringify(userData));
+      // Imposta l'header di autorizzazione
+      axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
       
-      // Forza un render per aggiornare la UI
-      setTimeout(() => {
-        console.log('Stato aggiornato, utente:', userData.name);
-      }, 0);
-      
+      console.log('Login completato con successo');
       return true;
     } catch (error) {
       console.error('Errore durante il login:', error);
@@ -88,52 +61,31 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     console.log('Logout chiamato');
     
-    // Rimuovi da localStorage
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    // Rimuovi i dati
+    clearAuth();
     
     // Resetta lo stato
     setUser(null);
     setToken(null);
     
     // Rimuovi l'header di autorizzazione
-    setAuthHeader(null);
+    delete axios.defaults.headers.common['Authorization'];
     
     console.log('Logout completato');
   };
 
-  // Aggiorna dati utente
-  const updateUser = (userData) => {
-    console.log('Aggiornamento dati utente:', userData);
-    
-    try {
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      console.log('Dati utente aggiornati con successo');
-      return true;
-    } catch (error) {
-      console.error('Errore nell\'aggiornamento dei dati utente:', error);
-      return false;
-    }
+  // Verifica dell'autenticazione
+  const checkAuth = () => {
+    return isAuthenticated();
   };
-
-  // DEBUG: Verifica lo stato corrente
-  useEffect(() => {
-    console.log('Stato attuale AuthContext:', { 
-      isAuthenticated: !!user, 
-      hasToken: !!token,
-      user: user ? (user.name || user.username) : 'nessuno'
-    });
-  }, [user, token]);
 
   const value = {
     user,
     token,
     isAuthenticated: !!user,
-    loading,
     login,
     logout,
-    updateUser
+    checkAuth
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
