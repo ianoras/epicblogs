@@ -9,7 +9,8 @@ const Register = () => {
     firstName: '',
     lastName: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,12 +21,20 @@ const Register = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
+
+    // Verifica le password
+    if (formData.password !== formData.confirmPassword) {
+      setError('Le password non coincidono');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, formData, {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/users/register`, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password
       });
       
       // Effettua il login automatico
@@ -44,7 +53,7 @@ const Register = () => {
       navigate('/');
     } catch (err) {
       console.error('Errore registrazione:', err);
-      setError(err.response?.data?.message || err.response?.data?.error || 'Errore durante la registrazione');
+      setError(err.response?.data?.message || 'Errore durante la registrazione');
     } finally {
       setLoading(false);
     }
@@ -116,6 +125,18 @@ const Register = () => {
                     onChange={handleChange}
                     required
                     placeholder="Crea una password"
+                  />
+                </Form.Group>
+                
+                <Form.Group className="mb-4">
+                  <Form.Label>Conferma Password</Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    required
+                    placeholder="Conferma la password"
                   />
                 </Form.Group>
                 
