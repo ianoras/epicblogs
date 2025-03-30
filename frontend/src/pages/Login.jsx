@@ -58,39 +58,39 @@ const Login = () => {
         }
     }, [location, login, navigate]);
 
-    // Aggiungi nell'useEffect:
     useEffect(() => {
-        console.log('Login component mounted - checking URL for params');
-        const searchParams = new URLSearchParams(window.location.search);
+        console.log('=== LOGIN PAGE LOADED ===');
+        const params = new URLSearchParams(location.search);
+        const userParam = params.get('user');
+        const tokenParam = params.get('token');
         
-        const userParam = searchParams.get('user');
-        const tokenParam = searchParams.get('token');
-        
-        console.log('URL params:', { userParam: !!userParam, tokenParam: !!tokenParam });
-        
+        console.log('Parametri URL trovati:', {
+            hasUser: !!userParam,
+            hasToken: !!tokenParam
+        });
+
         if (userParam && tokenParam) {
             try {
                 const userData = JSON.parse(decodeURIComponent(userParam));
                 const token = decodeURIComponent(tokenParam);
                 
-                console.log('Parsed user data:', userData);
-                console.log('Token from URL:', token.substring(0, 10) + '...');
+                console.log('Dati utente decodificati:', userData);
+                console.log('Token decodificato:', token.substring(0, 20) + '...');
                 
-                // Chiamata al login con un piccolo ritardo per garantire che lo stato sia aggiornato
-                setTimeout(() => {
-                    const success = login(userData, token);
-                    if (success) {
-                        console.log('Autenticazione via URL params completata');
-                        navigate('/');
-                    } else {
-                        console.error('Errore durante l\'autenticazione con i parametri URL');
-                    }
-                }, 300);
+                // Effettua il login
+                const success = login(userData, token);
+                
+                if (success) {
+                    console.log('Login completato con successo, reindirizzamento...');
+                    navigate('/', { replace: true });
+                } else {
+                    console.error('Login fallito');
+                }
             } catch (error) {
-                console.error('Errore nel parsing dei parametri URL:', error);
+                console.error('Errore nel processo di login:', error);
             }
         }
-    }, [login, navigate]);
+    }, [location, login, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
