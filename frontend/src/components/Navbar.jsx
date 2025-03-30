@@ -1,49 +1,49 @@
-import { useEffect, useState } from 'react';
-import { Navbar, Nav, Container, Button } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Navbar, Container, Nav, NavDropdown, Image, Spinner } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const NavigationBar = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, logout, timestamp } = useAuth();
   const navigate = useNavigate();
-  const [checked, setChecked] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
-  const [predefinedCategories, setPredefinedCategories] = useState([]);
-
-  // Verifica stato autenticazione all'avvio
-  useEffect(() => {
-    // Verifica manuale se localStorage ha dati
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    
-    if (token && userStr) {
-      try {
-        const userData = JSON.parse(userStr);
-        console.log('Dati utente trovati nel localStorage:', userData.name);
-      } catch (error) {
-        console.error('Errore nel parsing dei dati utente:', error);
-      }
-    } else {
-      console.log('Nessun dato utente trovato nel localStorage');
-    }
-    
-    console.log('Navbar: stato autenticazione =', isAuthenticated);
-    console.log('Navbar: user =', user);
-    setChecked(true);
-  }, [isAuthenticated, user]);
+  
+  // Lista di tutte le categorie predefinite (usando useMemo per evitare ricreazione ad ogni render)
+  const predefinedCategories = useMemo(() => [
+    "Tecnologia", "Viaggi", "Cucina", "Sport", "Salute", 
+    "Musica", "Cinema", "Libri", "Arte", "Moda", "Altro"
+  ], []);
 
   // Carica le categorie disponibili
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
+        // Usa l'URL di produzione invece di hardcodare localhost
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/posts/categories`);
         
-        // ... resto del codice ...
+        // Crea un oggetto per mappare le categorie con i loro conteggi
+        const categoryCounts = {};
+        if (response.data && response.data.categories) {
+          response.data.categories.forEach(cat => {
+            categoryCounts[cat.name] = cat.count;
+          });
+        }
+        
+        // Crea un array con tutte le categorie predefinite e i conteggi (0 se non presenti)
+        const allCategories = predefinedCategories.map(name => ({
+          name,
+          count: categoryCounts[name] || 0
+        }));
+        
+        setCategories(allCategories);
       } catch (error) {
         console.error('Errore nel caricamento delle categorie:', error);
-        // ... gestione dell'errore ...
+        // Fallback alle categorie predefinite con conteggio 0
+        const fallbackCategories = predefinedCategories.map(name => ({ name, count: 0 }));
+        setCategories(fallbackCategories);
       } finally {
         setLoadingCategories(false);
       }
@@ -51,70 +51,118 @@ const NavigationBar = () => {
     fetchCategories();
   }, [predefinedCategories]);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  // Determina i link da mostrare in base all'autenticazione
-  const renderAuthLinks = () => {
-    // Verifica manuale
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    const hasLocalAuth = !!(token && userStr);
-    
-    // Usa sia isAuthenticated che il controllo manuale
-    const isUserAuth = isAuthenticated || hasLocalAuth;
-    
-    if (isUserAuth) {
-      let userName = 'Utente';
-      if (user) {
-        userName = user.name || user.username;
-      } else if (userStr) {
-        try {
-          const userData = JSON.parse(userStr);
-          userName = userData.name || userData.username;
-        } catch (error) {
-          console.error('Errore nel parsing del nome utente:', error);
-        }
-      }
-      
-      return (
-        <>
-          <span className="navbar-text me-3">
-            Ciao, {userName}
-          </span>
-          <Nav.Link as={Link} to="/profile">Profilo</Nav.Link>
-          <Button variant="outline-light" onClick={handleLogout}>Logout</Button>
-        </>
-      );
-    } else {
-      return (
-        <>
-          <Nav.Link as={Link} to="/login">Accedi</Nav.Link>
-          <Nav.Link as={Link} to="/register">Registrati</Nav.Link>
-        </>
-      );
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Errore durante il logout:', error);
     }
   };
 
+  const navigateToCategory = (categoryName) => {
+    navigate(`/?category=${categoryName}`);
+  };
+
+  // Usa l'immagine profilo dell'utente se disponibile, altrimenti usa l'avatar generato
+  const profileImage = user?.profilePicture 
+    ? `${user.profilePicture}?t=${timestamp}` 
+    : `https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=${user?.firstName}+${user?.lastName}`;
+
   return (
-    <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
+    <Navbar 
+      expand="lg" 
+      className="navbar-custom py-3"
+      style={{
+        background: 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      }}
+      variant="dark" // Aggiungi questo per il tema scuro
+    >
       <Container>
-        <Navbar.Brand as={Link} to="/">EpicBlogs</Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Toggle 
+          aria-controls="basic-navbar-nav" 
+          style={{ borderColor: 'white' }}
+        />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
-            <Nav.Link as={Link} to="/">Home</Nav.Link>
-            {(isAuthenticated || localStorage.getItem('token')) && (
-              <>
-                <Nav.Link as={Link} to="/create">Crea Post</Nav.Link>
-                <Nav.Link as={Link} to="/my-posts">I Miei Post</Nav.Link>
-              </>
+            <Nav.Link as={Link} to="/" onClick={(e) => {
+              e.preventDefault();
+              navigate('/', { replace: true });
+            }}>Home</Nav.Link>
+            {user && (
+              <Nav.Link as={Link} to="/create">Nuovo Articolo</Nav.Link>
             )}
+            
+            {/* Menu categorie */}
+            <NavDropdown 
+              title="Categorie" 
+              id="categories-dropdown"
+            >
+              {loadingCategories ? (
+                <NavDropdown.Item disabled>
+                  <Spinner animation="border" size="sm" /> Caricamento...
+                </NavDropdown.Item>
+              ) : categories.length > 0 ? (
+                <>
+                  {categories.map(category => (
+                    <NavDropdown.Item 
+                      key={category.name}
+                      onClick={() => navigateToCategory(category.name)}
+                    >
+                      {category.name} {category.count > 0 && <span className="text-muted">({category.count})</span>}
+                    </NavDropdown.Item>
+                  ))}
+                </>
+              ) : (
+                <NavDropdown.Item disabled>Nessuna categoria disponibile</NavDropdown.Item>
+              )}
+            </NavDropdown>
           </Nav>
           <Nav>
-            {renderAuthLinks()}
+            {user ? (
+              <>
+                <div className="d-flex align-items-center">
+                  <Image 
+                    src={profileImage} 
+                    roundedCircle 
+                    width={40} 
+                    height={40} 
+                    className="me-2"
+                    style={{ objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.target.onerror = null; // Previene il loop infinito
+                      e.target.src = `https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=${user.firstName}+${user.lastName}`;
+                    }}
+                  />
+                  <NavDropdown 
+                    title={`Ciao, ${user.firstName} ${user.lastName}`}
+                    id="basic-nav-dropdown"
+                    align="end"
+                  >
+                    <NavDropdown.Item as={Link} to="/create">
+                      Crea Articolo
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/my-posts">
+                      I Miei Articoli
+                    </NavDropdown.Item>
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item as={Link} to="/profile">
+                      Gestisci Profilo
+                    </NavDropdown.Item>
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item onClick={handleLogout}>
+                      Logout
+                    </NavDropdown.Item>
+                  </NavDropdown>
+                </div>
+              </>
+            ) : (
+              <>
+                <Nav.Link as={Link} to="/login">Login</Nav.Link>
+                <Nav.Link as={Link} to="/register">Register</Nav.Link>
+              </>
+            )}
           </Nav>
         </Navbar.Collapse>
       </Container>
