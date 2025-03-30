@@ -1,11 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { saveAuth, loadAuth, clearAuth, isAuthenticated } from '../utils/auth';
 
-// Aggiungi queste configurazioni dopo gli imports
-axios.defaults.withCredentials = true;
-axios.defaults.headers.common['Content-Type'] = 'application/json';
-
+// Context per l'autenticazione
 const AuthContext = createContext();
 
 export const useAuth = () => {
@@ -15,68 +11,67 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  // Inizializzazione - controlla localStorage al caricamento
+  // Inizializzazione
   useEffect(() => {
-    console.log('AuthContext inizializzato');
+    console.log('AuthContext: inizializzazione');
     
-    const authData = loadAuth();
-    if (authData) {
-      console.log('Utente trovato in localStorage:', authData.user.name);
-      setUser(authData.user);
-      setToken(authData.token);
+    try {
+      const savedToken = localStorage.getItem('token');
+      const savedUserStr = localStorage.getItem('user');
       
-      // Imposta l'header di autorizzazione
-      axios.defaults.headers.common['Authorization'] = `Bearer ${authData.token}`;
+      if (savedToken && savedUserStr) {
+        const savedUser = JSON.parse(savedUserStr);
+        console.log('AuthContext: dati trovati in localStorage');
+        
+        setUser(savedUser);
+        setToken(savedToken);
+        
+        // Configura axios
+        axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+      }
+    } catch (error) {
+      console.error('AuthContext: errore durante l\'inizializzazione', error);
     }
-    
-    setLoading(false);
   }, []);
 
   // Login
   const login = (userData, authToken) => {
-    console.log('Login chiamato in AuthContext');
+    console.log('AuthContext: login chiamato');
     
     try {
       // Salva i dati
-      saveAuth(authToken, userData);
+      localStorage.setItem('token', authToken);
+      localStorage.setItem('user', JSON.stringify(userData));
       
       // Aggiorna lo stato
       setUser(userData);
       setToken(authToken);
       
-      // Imposta l'header di autorizzazione
+      // Configura axios
       axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
       
-      console.log('Login completato con successo');
       return true;
     } catch (error) {
-      console.error('Errore durante il login:', error);
+      console.error('AuthContext: errore durante il login', error);
       return false;
     }
   };
 
   // Logout
   const logout = () => {
-    console.log('Logout chiamato');
+    console.log('AuthContext: logout chiamato');
     
     // Rimuovi i dati
-    clearAuth();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     
-    // Resetta lo stato
+    // Aggiorna lo stato
     setUser(null);
     setToken(null);
     
-    // Rimuovi l'header di autorizzazione
+    // Rimuovi la configurazione di axios
     delete axios.defaults.headers.common['Authorization'];
-    
-    console.log('Logout completato');
-  };
-
-  // Verifica dell'autenticazione
-  const checkAuth = () => {
-    return isAuthenticated();
   };
 
   const value = {
@@ -84,8 +79,7 @@ export const AuthProvider = ({ children }) => {
     token,
     isAuthenticated: !!user,
     login,
-    logout,
-    checkAuth
+    logout
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

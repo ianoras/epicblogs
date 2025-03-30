@@ -1,39 +1,80 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const NavigationBar = () => {
-  const { user, isAuthenticated, logout, login } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const [checked, setChecked] = useState(false);
 
-  // Controllo dello stato all'avvio
+  // Verifica stato autenticazione all'avvio
   useEffect(() => {
-    // Verifica se ci sono dati nel localStorage
+    // Verifica manuale se localStorage ha dati
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
     
-    if (token && userStr && !isAuthenticated) {
+    if (token && userStr) {
       try {
         const userData = JSON.parse(userStr);
-        login(userData, token);
+        console.log('Dati utente trovati nel localStorage:', userData.name);
       } catch (error) {
-        console.error('Errore nel caricamento dello stato utente:', error);
+        console.error('Errore nel parsing dei dati utente:', error);
       }
+    } else {
+      console.log('Nessun dato utente trovato nel localStorage');
     }
-  }, [isAuthenticated, login]);
-
-  // Debug render
-  useEffect(() => {
-    console.log('Navbar renderizzata, stato auth:', isAuthenticated);
-    if (user) {
-      console.log('Utente nella navbar:', user.name);
-    }
+    
+    console.log('Navbar: stato autenticazione =', isAuthenticated);
+    console.log('Navbar: user =', user);
+    setChecked(true);
   }, [isAuthenticated, user]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  // Determina i link da mostrare in base all'autenticazione
+  const renderAuthLinks = () => {
+    // Verifica manuale
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    const hasLocalAuth = !!(token && userStr);
+    
+    // Usa sia isAuthenticated che il controllo manuale
+    const isUserAuth = isAuthenticated || hasLocalAuth;
+    
+    if (isUserAuth) {
+      let userName = 'Utente';
+      if (user) {
+        userName = user.name || user.username;
+      } else if (userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          userName = userData.name || userData.username;
+        } catch (error) {
+          console.error('Errore nel parsing del nome utente:', error);
+        }
+      }
+      
+      return (
+        <>
+          <span className="navbar-text me-3">
+            Ciao, {userName}
+          </span>
+          <Nav.Link as={Link} to="/profile">Profilo</Nav.Link>
+          <Button variant="outline-light" onClick={handleLogout}>Logout</Button>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <Nav.Link as={Link} to="/login">Accedi</Nav.Link>
+          <Nav.Link as={Link} to="/register">Registrati</Nav.Link>
+        </>
+      );
+    }
   };
 
   return (
@@ -44,7 +85,7 @@ const NavigationBar = () => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
             <Nav.Link as={Link} to="/">Home</Nav.Link>
-            {isAuthenticated && (
+            {(isAuthenticated || localStorage.getItem('token')) && (
               <>
                 <Nav.Link as={Link} to="/create">Crea Post</Nav.Link>
                 <Nav.Link as={Link} to="/my-posts">I Miei Post</Nav.Link>
@@ -52,20 +93,7 @@ const NavigationBar = () => {
             )}
           </Nav>
           <Nav>
-            {isAuthenticated ? (
-              <>
-                <span className="navbar-text me-3">
-                  Ciao, {user?.name || user?.username || 'Utente'}
-                </span>
-                <Nav.Link as={Link} to="/profile">Profilo</Nav.Link>
-                <Button variant="outline-light" onClick={handleLogout}>Logout</Button>
-              </>
-            ) : (
-              <>
-                <Nav.Link as={Link} to="/login">Accedi</Nav.Link>
-                <Nav.Link as={Link} to="/register">Registrati</Nav.Link>
-              </>
-            )}
+            {renderAuthLinks()}
           </Nav>
         </Navbar.Collapse>
       </Container>

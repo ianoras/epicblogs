@@ -25,26 +25,23 @@ app.use((req, res, next) => {
   next();
 });
 
-// Configura CORS in modo permissivo
-app.use(cors({
-  origin: true, // Consente qualsiasi origine
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Middleware per aggiungere manualmente gli header CORS
+// Configura CORS in modo permissivo (PRIMA di tutti gli altri middleware)
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
   
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
+  
   next();
 });
+
+// Configurazione di base
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Aggiungi/aggiorna la configurazione delle sessioni
 app.use(session({
@@ -57,8 +54,6 @@ app.use(session({
         maxAge: 24 * 60 * 60 * 1000 // 24 ore
     }
 }));
-
-app.use(express.json());
 
 // Inizializza Passport
 app.use(passport.initialize());
